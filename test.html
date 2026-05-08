@@ -370,7 +370,7 @@ async function fetchWithRetry(prompt, maxRetries = 3) {
   
   for (let i = 0; i < maxRetries; i++) {
     try {
-      const response = await fetch("http://localhost:3001/api", {
+      const response = await fetch("/api", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
