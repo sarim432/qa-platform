@@ -1,0 +1,15 @@
+{
+  "name": "qa-assessment-platform",
+  "version": "1.0.0",
+  "description": "QA Assessment Platform with Claude AI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "nodemailer": "^6.9.9"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

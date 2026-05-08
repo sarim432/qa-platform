@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Assessment Platform - Powered by Claude AI</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c14;--surface:#0f1520;--surface2:#161d2e;--surface3:#1e2840;
+  --border:#1f2d47;--border2:#2a3d5c;
+  --accent:#3b82f6;--aglow:rgba(59,130,246,.15);
+  --accent2:#10d9a0;--a2glow:rgba(16,217,160,.12);
+  --warn:#f59e0b;--danger:#ef4444;--success:#10b981;
+  --text:#e2e8f4;--text2:#8fa3c4;--text3:#4a6080;
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Syne',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
+#app{min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+.page{max-width:880px;margin:0 auto;padding:28px 20px 80px}
+.page-narrow{max-width:520px;margin:0 auto;padding:28px 20px 80px}
+.topbar{display:flex;align-items:center;gap:12px;padding:0 0 24px;border-bottom:1px solid var(--border);margin-bottom:28px}
+.brand-mark{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.brand-name{font-family:var(--display);font-size:18px;font-weight:700;color:var(--text)}
+.brand-tag{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 28px;margin-bottom:18px; position:relative;}
+.card-title{font-family:var(--display);font-size:15px;font-weight:700;color:var(--text);margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap; justify-content: space-between;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}}
+.form-group{margin-bottom:16px}
+.form-group:last-child{margin-bottom:0}
+label{display:block;font-size:11px;font-weight:600;color:var(--text3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.8px;font-family:var(--mono)}
+input[type=text],input[type=email],input[type=password],textarea,select{
+  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;
+  padding:11px 14px;color:var(--text);font-size:14px;font-family:var(--sans);outline:none;transition:border-color .2s,box-shadow .2s; cursor: pointer;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--aglow)}
+textarea{min-height:100px;resize:vertical;line-height:1.6}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+select option{background:var(--surface2);color:var(--text)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 22px;border-radius:9px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all .18s;font-family:var(--sans);white-space:nowrap}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:#4f95ff;transform:translateY(-1px);box-shadow:0 4px 20px rgba(59,130,246,.35)}
+.btn-success{background:var(--accent2);color:#061a12}
+.btn-success:hover:not(:disabled){background:#17f0b2;transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-ghost{background:transparent;color:var(--text3);border:none;padding:8px 12px;font-size:13px}
+.btn-ghost:hover{color:var(--text)}
+.btn-lg{padding:15px 32px;font-size:16px;border-radius:11px}
+.btn-full{width:100%}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-loading{position:relative;color:transparent!important}
+.btn-loading::after{content:'';position:absolute;width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+.badge{font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600;font-family:var(--mono);white-space:nowrap}
+.badge-blue{background:rgba(59,130,246,.18);color:#60a5fa}
+.badge-green{background:rgba(16,185,129,.18);color:#34d399}
+.badge-amber{background:rgba(245,158,11,.18);color:#fbbf24}
+.badge-red{background:rgba(239,68,68,.18);color:#f87171}
+.badge-teal{background:rgba(16,217,160,.18);color:var(--accent2)}
+.badge-purple{background:rgba(139,92,246,.18);color:#a78bfa}
+.badge-orange{background:rgba(249,115,22,.18);color:#fb923c}
+.alert{padding:12px 16px;border-radius:9px;font-size:13px;margin-bottom:16px;line-height:1.5}
+.alert-success{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);color:#34d399}
+.alert-warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:#fbbf24}
+.alert-danger{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#f87171}
+.alert-info{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:#93c5fd}
+.tabs{display:flex;gap:3px;background:var(--surface2);border-radius:11px;padding:4px;margin-bottom:24px}
+.tab{flex:1;padding:10px 6px;border-radius:8px;border:none;background:transparent;color:var(--text3);font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;font-family:var(--sans)}
+.tab.active{background:var(--surface3);color:var(--text)}
+.tab:hover:not(.active){color:var(--text2)}
+.progress-track{background:var(--surface2);border-radius:99px;height:5px;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:600px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+.stat-box{background:var(--surface2);border-radius:11px;padding:16px;text-align:center;border:1px solid var(--border)}
+.stat-num{font-family:var(--display);font-size:26px;font-weight:800;color:var(--accent)}
+.stat-label{font-size:11px;color:var(--text3);margin-top:4px;font-family:var(--mono)}
+.mcq-item{background:var(--surface2);border-radius:12px;padding:20px 22px;margin-bottom:14px;border:1px solid var(--border)}
+.mcq-meta{font-size:11px;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mcq-q{font-size:14px;font-weight:600;color:var(--text);margin-bottom:16px;line-height:1.6}
+.mcq-options{display:flex;flex-direction:column;gap:8px}
+.mcq-opt{padding:11px 14px;border-radius:8px;border:1px solid var(--border);cursor:pointer;font-size:13px;color:var(--text2);display:flex;align-items:center;gap:10px;transition:all .15s;line-height:1.4}
+.mcq-opt:hover{border-color:var(--accent);color:var(--text);background:var(--aglow)}
+.mcq-opt.selected{border-color:var(--accent);background:var(--aglow);color:var(--text)}
+.mcq-opt.correct{border-color:var(--success);background:rgba(16,185,129,.12);color:#34d399}
+.mcq-opt.wrong{border-color:var(--danger);background:rgba(239,68,68,.1);color:#f87171}
+.opt-letter{width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;font-family:var(--mono)}
+.explanation{font-size:12px;color:var(--text3);margin-top:12px;padding:10px 14px;background:var(--surface);border-radius:7px;border-left:3px solid var(--accent);line-height:1.6}
+.timer-bar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 20px;display:flex;align-items:center;gap:14px;margin-bottom:20px;position:sticky;top:10px;z-index:10;backdrop-filter:blur(10px)}
+.timer-display{font-size:20px;font-weight:600;color:var(--warn);font-family:var(--mono);min-width:60px}
+.candidate-card{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--surface2);border-radius:11px;border:1px solid var(--border);margin-bottom:10px;flex-wrap:wrap}
+.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:15px;flex-shrink:0;font-family:var(--display)}
+.email-tag{display:inline-flex;align-items:center;gap:6px;background:var(--surface3);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:12px;color:var(--text2);font-family:var(--mono)}
+.email-tag button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;transition:color .15s}
+.email-tag button:hover{color:var(--danger)}
+.email-tags-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;min-height:24px}
+.diff-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:8px}
+@media(max-width:500px){.diff-grid{grid-template-columns:1fr}}
+.diff-card{border:2px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .18s;background:var(--surface2)}
+.diff-card:hover{border-color:var(--border2);background:var(--surface3)}
+.diff-card.sel{border-color:var(--accent);background:var(--aglow)}
+.diff-card-title{font-size:13px;font-weight:700;color:var(--text);margin:6px 0 2px}
+.diff-card-sub{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.loading-wrap{text-align:center;padding:36px 20px}
+.spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px}
+.loading-label{font-size:14px;color:var(--accent);font-family:var(--mono)}
+.score-ring{width:120px;height:120px;border-radius:50%;border:5px solid var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:18px auto}
+.score-big{font-family:var(--display);font-size:28px;font-weight:800;color:var(--accent);line-height:1}
+.score-of{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.mark-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chip{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;font-family:var(--mono)}
+.chip-green{background:rgba(16,185,129,.18);color:#34d399;border:1px solid rgba(16,185,129,.25)}
+.chip-red{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+.chip-gray{background:rgba(74,96,128,.15);color:var(--text3);border:1px solid var(--border)}
+.link-box{background:var(--surface2);border:1px solid var(--accent);border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.link-url{flex:1;font-size:12px;color:var(--accent2);font-family:var(--mono);word-break:break-all;line-height:1.5}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px}
+.info-row:last-child{border-bottom:none}
+.info-label{color:var(--text3);font-size:12px;font-family:var(--mono)}
+.info-val{color:var(--text);font-weight:500}
+.hero{text-align:center;padding:60px 20px 40px}
+.hero-eye{font-family:var(--mono);font-size:12px;color:var(--accent2);letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+.hero-title{font-family:var(--display);font-size:clamp(28px,6vw,50px);font-weight:800;color:var(--text);line-height:1.1;margin-bottom:18px}
+.hero-title span{color:var(--accent)}
+.hero-sub{font-size:16px;color:var(--text2);max-width:480px;margin:0 auto 36px;line-height:1.7}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.grid-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.025;background-image:linear-gradient(var(--text) 1px,transparent 1px),linear-gradient(90deg,var(--text) 1px,transparent 1px);background-size:50px 50px}
+.rel{position:relative;z-index:1}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .3s ease forwards}
+code{background:var(--surface3);border:1px solid var(--border2);border-radius:5px;padding:2px 7px;font-family:var(--mono);font-size:12px;color:var(--accent2)}
+
+/* Dropzone Styles for Drag & Drop */
+.dropzone {
+    width: 100%; height: 44px; border: 1px dashed var(--border2); border-radius: 9px;
+    display: flex; align-items: center; justify-content: center; position: relative;
+    overflow: hidden; cursor: pointer; transition: all 0.2s; font-size: 13px; font-weight: 500;
+}
+.dropzone:hover { border-color: var(--accent); background: var(--surface3); }
+.dropzone input[type=file] { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+/* MODAL FIXES - Allowing standard scrolling */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(8,12,20,0.85); backdrop-filter: blur(4px); z-index: 100; 
+    overflow-y: auto; padding: 40px 20px;
+}
+.modal-content {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px; 
+    width: 100%; max-width: 800px; margin: 0 auto; display: flex; flex-direction: column;
+}
+.modal-header {
+    padding: 20px 28px; border-bottom: 1px solid var(--border); 
+    display: flex; justify-content: space-between; align-items: center; 
+    background: var(--surface); z-index: 2; border-radius: 14px 14px 0 0;
+}
+.modal-body {
+    padding: 28px;
+}
+
+/* Specific styling for the candidate block */
+.candidate-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 20px;
+    margin-bottom: 20px;
+    position: relative;
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="rel" id="app"><div style="text-align:center;padding:80px 20px;color:#8fa3c4;font-family:'DM Sans',sans-serif">Loading…</div></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// GLOBAL DRAG & DROP BLOCKER (Prevents page refresh)
+// ═══════════════════════════════════════════════
+window.addEventListener("dragover", function(e) { e.preventDefault(); }, false);
+window.addEventListener("drop", function(e) { e.preventDefault(); }, false);
+
+// ═══════════════════════════════════════════════
+// CONFIG — edit before deploying
+// ═══════════════════════════════════════════════
+const CFG = {
+  DEFAULT_ADMIN_PASSWORD:     "QAAdmin2024",
+  EMAILJS_SERVICE_ID:         "service_mp36fh7",
+  EMAILJS_TMPL_CANDIDATE:     "template_7dcigmu",
+  EMAILJS_TMPL_RESULTS:       "template_wnutrfd",
+  EMAILJS_PUBLIC_KEY:         "SgG9cByq8yS5n8U2A",
+  OPENAI_API_KEY:             "", // Unused - now using Anthropic API
+  BASE_URL:                   localStorage.getItem('qa_base_url') || ""
+};
+// ═══════════════════════════════════════════════
+
+// Get dynamic password from local storage or fallback to default
+function getAdminPass() { return localStorage.getItem('qa_admin_pass') || CFG.DEFAULT_ADMIN_PASSWORD; }
+
+// Disposable email blocklist
+const TEMP_DOMAINS = ['mailinator.com', 'yopmail.com', 'tempmail.com', 'guerrillamail.com', '10minutemail.com', 'temp-mail.org', 'throwawaymail.com'];
+
+// Difficulty levels
+const DIFF = {
+  expert:       {label:"Subject Matter Expert", years:"20+ years",  badge:"badge-purple", color:"#a78bfa"},
+  learned:      {label:"Learned Professional",  years:"15–19 years",badge:"badge-blue",   color:"#60a5fa"},
+  knowledgeable:{label:"Knowledgeable",          years:"10–14 years",badge:"badge-teal",   color:"#10d9a0"},
+  basic:        {label:"Basic",                  years:"< 5 years",  badge:"badge-green",  color:"#34d399"}
+};
+const DIFF_PROMPT = {
+  expert:       "extremely challenging, expert-level questions testing deep mastery, edge cases, advanced failure analysis, regulatory interpretation, multi-system integration, and strategic QA leadership decisions that only a 20+ year seasoned professional would know",
+  learned:      "advanced questions requiring thorough command of standards, complex audit scenarios, supplier system management, advanced statistical methods, and systemic quality thinking expected of a 15-19 year experienced professional",
+  knowledgeable:"solid intermediate-to-advanced questions on practical QA ownership, tool proficiency (SPC, FMEA, MSA), process control, root cause methodologies, and cross-functional quality management for 10-14 years experience",
+  basic:        "foundational questions on core QA/QC concepts, basic inspection methods, standard terminology, NCR/CAPA basics, and entry-level procedural knowledge for someone with under 5 years experience"
+};
+
+// Marking
+const MARKS = {correct:4, wrong:-1, skip:0};
+const MAX_MARKS = 25 * 4; // 100
+
+// State
+let S = {
+  view:'landing', adminTab:'create',
+  candidates: JSON.parse(localStorage.getItem('qa_v3_cands')||'[]'),
+  resultEmails: JSON.parse(localStorage.getItem('qa_v3_emails')||'[]'),
+  activeTest:null, 
+  form:{candidates:[{name:'', email:'', difficulty:'knowledgeable', resumeText:'', resumeFileName:''}], qapText:'', qapFileName:''},
+  questions:[], answers:{}, submitted:false, elapsed:0,
+  generating:false, genStep:'', genPct:0,
+  mailStatus:'',
+  reviewMode:false,
+  adminPassInput:'', passErr:'',
+  newEmailInput:'',
+  viewCandidate: null, 
+  previewTest: null,   
+  newPassInput: '', confirmPassInput: '', passChangeMsg: '' 
+};
+let timerInt = null;
+
+function save(){ localStorage.setItem('qa_v3_cands',JSON.stringify(S.candidates)); localStorage.setItem('qa_v3_emails',JSON.stringify(S.resultEmails)); }
+function set(u,nr){ Object.assign(S,u); if(!nr) render(); }
+
+// Validate Email Function
+function validateEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!re.test(email)) return "Invalid email format.";
+  const domain = email.split('@')[1].toLowerCase();
+  if (TEMP_DOMAINS.includes(domain)) return "Temporary/disposable emails are not allowed.";
+  return null; 
+}
+
+// PDF Extractor Helper
+async function extractTextFromPDF(file) {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        fullText += textContent.items.map(s => s.str).join(' ') + '\n';
+    }
+    return fullText;
+  } catch (e) {
+    console.error("PDF Extraction Error:", e);
+    return "Error reading PDF. Please paste text manually.";
+  }
+}
+
+// Handlers for File Inputs
+async function handleQAPUpload(e) {
+  const file = e.dataTransfer ? e.dataTransfer.files[0] : e.target.files[0];
+  if (!file) return;
+  S.form.qapFileName = file.name;
+  S.form.qapText = 'Extracting PDF... Please wait.';
+  render(); // Update UI to show extracting state
+  const text = await extractTextFromPDF(file);
+  S.form.qapText = text;
+  render(); // Update UI with finished state
+}
+
+async function handleIndividualResumeUpload(e, candidateIndex) {
+  const file = e.dataTransfer ? e.dataTransfer.files[0] : e.target.files[0];
+  if (!file) return;
+  S.form.candidates[candidateIndex].resumeFileName = file.name;
+  S.form.candidates[candidateIndex].resumeText = 'Extracting PDF... Please wait.';
+  render();
+  const text = await extractTextFromPDF(file);
+  S.form.candidates[candidateIndex].resumeText = text.trim();
+  render();
+}
+
+// PDF Removal Handlers
+function removeQAP(e) {
+  e.stopPropagation();
+  S.form.qapFileName = '';
+  S.form.qapText = '';
+  render();
+}
+
+function removeResume(e, candidateIndex) {
+  e.stopPropagation();
+  S.form.candidates[candidateIndex].resumeFileName = '';
+  S.form.candidates[candidateIndex].resumeText = '';
+  render();
+}
+
+// EmailJS
+// Email is now sent via server-side /send-email endpoint (nodemailer + Gmail)
+// No EmailJS dependency needed
+function ejsOk(){ return true; } // always true — server handles email
+
+async function sendCandidateEmail(c){
+  try{
+    const resp = await fetch('/send-email', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ type:'candidate_invite', data:{
+        to_name: c.name,
+        to_email: c.email,
+        test_link: c.link,
+        expires_date: new Date(c.expires).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}),
+        difficulty: DIFF[c.difficulty]?.label||c.difficulty
+      }})
+    });
+    return resp.ok;
+  } catch(e){ console.error('sendCandidateEmail error:', e); return false; }
+}
+
+async function sendResultsEmails(c, sd){
+  if(!S.resultEmails.length) return false;
+  try{
+    const resp = await fetch('/send-email', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ type:'results', data:{
+        result_emails: S.resultEmails,
+        candidate_name: c.name,
+        candidate_email: c.email,
+        difficulty: DIFF[c.difficulty]?.label||c.difficulty,
+        score_marks: sd.marks+' / '+MAX_MARKS,
+        score_pct: sd.pct,
+        correct: sd.correct,
+        wrong: sd.wrong,
+        skipped: sd.skipped,
+        time_taken: sd.timeTaken,
+        date: new Date().toLocaleString('en-IN'),
+        breakdown: sd.breakdown
+      }})
+    });
+    return resp.ok;
+  } catch(e){ console.error('sendResultsEmails error:', e); return false; }
+}
+
+// Score calc
+function calcScore(qs,answers){
+  let correct=0,wrong=0,skipped=0,marks=0;
+  const lines = qs.map((q,i)=>{
+    const a=answers[i];
+    if(a===undefined||a===null){ skipped++; return `Q${i+1}: SKIPPED (0) | ${q.question.slice(0,50)}…`; }
+    if(a===q.correct){ correct++; marks+=4; return `Q${i+1}: ✓ CORRECT (+4) | ${q.question.slice(0,50)}…`; }
+    wrong++; marks-=1;
+    return `Q${i+1}: ✗ WRONG (-1) | ${q.question.slice(0,50)}… | Your: ${q.options[a]?.slice(0,30)} | Correct: ${q.options[q.correct]?.slice(0,30)}`;
+  });
+  return {correct,wrong,skipped,marks,pct:Math.max(0,Math.round(marks/MAX_MARKS*100)),breakdown:lines.join('\n'),timeTaken:fmt(S.elapsed)};
+}
+
+// ANTHROPIC API CALL with retry logic
+// Calls the local proxy server (proxy.js) — run it with: node proxy.js
+async function fetchWithRetry(prompt, maxRetries = 3) {
+  let delay = 5000;
+  
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await fetch("/api", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-5",
+          max_tokens: 8000,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        const errMsg = data.error?.message || "API Error";
+        if (response.status === 429 || response.status === 529) throw new Error("429");
+        throw new Error(errMsg);
+      }
+      return data;
+    } catch (e) {
+      if (e.message === "429") {
+        console.warn(`API Limit Hit. Pausing for ${delay/1000}s... (Attempt ${i+1}/${maxRetries})`);
+        await new Promise(r => setTimeout(r, delay));
+        delay *= 2;
+      } else {
+        throw e;
+      }
+    }
+  }
+  throw new Error("API limit reached. Please wait a moment and try again.");
+}
+
+// GENERATION: Single API call per candidate using Anthropic Claude
+async function generate(){
+  const {candidates, qapText} = S.form;
+  
+  if (candidates.length === 0) return alert('Please add at least one candidate.');
+  for (let i = 0; i < candidates.length; i++) {
+    const c = candidates[i];
+    if (!c.name || !c.email) return alert(`Candidate #${i+1} is missing a name or email.`);
+    const emailError = validateEmail(c.email);
+    if (emailError) return alert(`Candidate #${i+1} (${c.email}): ${emailError}`);
+  }
+
+  if(!S.resultEmails.length) return alert('Please add at least one Result Email in the ⚙️ Settings tab first.');
+  const qap=qapText.trim()||DEMO_QAP;
+  set({generating:true,genStep:'Initializing generation…',genPct:5,questions:[]});
+
+  const upd=(s,p)=>{ S.genStep=s;S.genPct=p; const el=document.getElementById('gl'); if(el) el.textContent=s; const bar=document.getElementById('gb'); if(bar) bar.style.width=p+'%'; };
+
+  try{
+    let allGeneratedQs = [];
+
+    for (let i = 0; i < candidates.length; i++) {
+        const c = candidates[i];
+        const resText = c.resumeText.trim() || DEMO_RESUME; 
+        
+        const basePct = 5 + (90 * (i / candidates.length));
+        const nextPct = 5 + (90 * ((i + 1) / candidates.length));
+        const seed = Math.random().toString(36).substring(7);
+
+        upd(`Generating 25 questions for ${c.name} via Claude…`, basePct + ((nextPct-basePct)*0.4));
+
+        const prompt = `You are a QA examination expert. Generate exactly 25 MCQ questions in a JSON array.
+        Difficulty: ${DIFF_PROMPT[c.difficulty]}
+        
+        SOURCE MATERIAL 1 (QAP):
+        ${qap.slice(0,2500)}
+        
+        SOURCE MATERIAL 2 (Candidate Resume):
+        ${resText.slice(0,2000)}
+        
+        RULES:
+        - 4 options per question, exactly ONE correct (use 0-based index in "correct" field).
+        - Keep questions relatively short and concise for quick reading.
+        - Options MUST be clearly distinct from each other with no overlapping meaning.
+        - Include brief explanation for correct answer.
+        - Generate exactly 19 questions based on Source Material 1 (QAP).
+        - Generate exactly 6 questions based on Source Material 2 (Candidate Resume).
+        - IMPORTANT: Make these questions unique. Seed: ${seed}
+        - Return ONLY a valid JSON array. No markdown, no code fences, no backticks, no explanation before or after. Start your response with [ and end with ].
+        
+        FORMAT:
+        [
+          {"type":"qap", "question":"...", "options":["A. ...","B. ...","C. ...","D. ..."], "correct":0, "explanation":"..."},
+          {"type":"resume", "question":"...", "options":["A. ...","B. ...","C. ...","D. ..."], "correct":2, "explanation":"..."}
+        ]`;
+        
+        const r1 = await fetchWithRetry(prompt);
+        
+        const t1 = r1.content[0].text;
+        
+        // Robust JSON extraction: handle fenced or raw JSON arrays
+        function extractAndRepairJSON(raw) {
+          // Step 1: if response is wrapped in ```json ... ``` or ``` ... ```, extract the inner content
+          const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+          let s = fenceMatch ? fenceMatch[1].trim() : raw.trim();
+          // Step 2: find the outermost JSON array
+          const start = s.indexOf('[');
+          if (start === -1) throw new Error("No JSON array found in response");
+          s = s.slice(start);
+          // Find matching closing bracket
+          let depth = 0, end = -1;
+          for (let i = 0; i < s.length; i++) {
+            if (s[i] === '[') depth++;
+            else if (s[i] === ']') { depth--; if (depth === 0) { end = i; break; } }
+          }
+          if (end !== -1) {
+            // Clean complete array
+            return JSON.parse(s.slice(0, end + 1));
+          }
+          // Truncated — attempt to salvage complete objects
+          const items = [];
+          const re = /\{[\s\S]*?\}(?=\s*[,\]]|\s*$)/g;
+          let m;
+          while ((m = re.exec(s)) !== null) {
+            try { items.push(JSON.parse(m[0])); } catch(e) { /* skip malformed */ }
+          }
+          if (items.length < 10) throw new Error(`Only ${items.length} questions recovered — response was too short. Please try again.`);
+          return items;
+        }
+        
+        let allQs = extractAndRepairJSON(t1).slice(0, 25);
+        
+        // Ensure IDs are properly sequentially numbered
+        allQs = allQs.map((q, idx) => ({...q, id: idx + 1}));
+        allGeneratedQs = allQs;
+
+        upd(`Creating test link for ${c.name}…`, basePct + ((nextPct-basePct)*0.8));
+
+        const expires=Date.now()+3*24*60*60*1000;
+        const cid = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+        // Always use the proxy server origin so candidate links work on any browser/device
+        const serverOrigin = window.location.origin; // e.g. http://192.168.1.x:3001
+        const link = serverOrigin + '/?test=' + cid;
+        
+        const candData = {
+            id: cid, name: c.name, email: c.email, testName: `${c.name}'s Assessment`, 
+            qapText: qap, resumeText: resText, difficulty: c.difficulty, questions: allQs, link, expires, 
+            status: 'Pending', createdAt: new Date().toLocaleDateString('en-IN'), 
+            score: null, marks: null, timeTaken: null, finalAnswers: {}
+        };
+        
+        // Save to server store so any browser can open the link, not just this one
+        try {
+          await fetch('/store', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(candData) });
+        } catch(e) { console.error('Failed to save to server store:', e); }
+
+        S.candidates.unshift(candData);
+        localStorage.setItem('qa_test_' + cid, JSON.stringify(candData));
+        
+        upd(`Sending invite to ${c.name}…`, basePct + ((nextPct-basePct)*0.95));
+        
+        // Save safely before attempting email
+        save(); 
+        
+        if (ejsOk()) {
+            const mailSuccess = await sendCandidateEmail(candData);
+            if (!mailSuccess) {
+                console.error(`EmailJS failed to send invite to ${c.email}`);
+            }
+        }
+
+        // Throttle: short pause between candidates
+        if (i < candidates.length - 1) {
+            upd(`Preparing next candidate…`, nextPct);
+            await new Promise(r => setTimeout(r, 2000));
+        }
+    }
+
+    set({
+        generating: false, genStep: 'Done', genPct: 100, questions: allGeneratedQs, 
+        adminTab: 'generated', mailStatus: ejsOk() ? 'sent' : 'not_configured',
+        form: {...S.form, candidates: [{name:'', email:'', difficulty: 'knowledgeable', resumeText: '', resumeFileName: ''}]}
+    });
+  } catch(e) { 
+      save(); 
+      set({generating:false, genStep:'Error: '+e.message, genPct:0}); 
+      console.error(e); 
+  }
+}
+
+async function submitTest(){
+  if(!S.activeTest) return;
+  clearInterval(timerInt); timerInt=null;
+  const sd=calcScore(S.activeTest.questions,S.answers);
+  
+  const updatedCandidate = {...S.activeTest, status:'Completed', score:sd.pct, marks:sd.marks, timeTaken:sd.timeTaken, finalAnswers: S.answers};
+  
+  S.candidates=S.candidates.map(c=>c.id===S.activeTest.id?updatedCandidate:c);
+  localStorage.setItem('qa_test_'+S.activeTest.id,JSON.stringify(updatedCandidate));
+  // Sync completion back to server store so admin panel updates
+  try {
+    await fetch('/store/update', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(updatedCandidate) });
+  } catch(e) { console.error('Could not sync result to server:', e); }
+  save(); set({submitted:true,mailStatus:'sending'});
+  const sent=await sendResultsEmails(S.activeTest,sd);
+  set({mailStatus:sent?'sent':'not_configured'});
+}
+
+function fmt(s){ return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+function startTimer(){ clearInterval(timerInt); timerInt=setInterval(()=>{ S.elapsed++; const td=document.getElementById('td'); if(td) td.textContent=fmt(S.elapsed); const ac=document.getElementById('ac'); const tot=S.activeTest?.questions?.length||25; const ans=Object.keys(S.answers).length; if(ac) ac.textContent=ans+' of '+tot+' answered'; const pf=document.getElementById('pf'); if(pf) pf.style.width=Math.round(ans/tot*100)+'%'; const pp=document.getElementById('pp'); if(pp) pp.textContent=Math.round(ans/tot*100)+'%'; },1000); }
+async function checkURL(){
+  const p=new URLSearchParams(window.location.search),tid=p.get('test');
+  if(!tid) return false;
+  // Try localStorage first (admin's own browser), then fall back to server store
+  let c = null;
+  const raw = localStorage.getItem('qa_test_'+tid);
+  if(raw){ try{ c=JSON.parse(raw); }catch(e){} }
+  if(!c){
+    try{
+      const resp = await fetch('/store?id='+tid);
+      if(resp.ok){ c = await resp.json(); }
+    }catch(e){ console.error('Could not reach server store:', e); }
+  }
+  if(!c){ set({view:'expired'}); return true; }
+  if(Date.now()>c.expires){ set({view:'expired'}); return true; }
+  if(c.status==='Completed'){ set({view:'already_done'}); return true; }
+  S.activeTest=c; S.answers={}; S.submitted=false; S.elapsed=0; S.reviewMode=false;
+  set({view:'candidate'}); startTimer(); return true;
+}
+
+// ── Vanilla DOM builder ──────────────────────────────────
+function h(tag,attrs,...kids){
+  const el=document.createElement(tag);
+  if(attrs) Object.entries(attrs).forEach(([k,v])=>{
+    if(k==='className') el.className=v;
+    else if(k==='style'&&typeof v==='object') Object.assign(el.style,v);
+    else if(k.startsWith('on')&&typeof v==='function') el.addEventListener(k.slice(2).toLowerCase(),v);
+    else if(v!=null&&v!==false) el.setAttribute(k,v);
+  });
+  kids.flat(Infinity).forEach(c=>{ if(c==null||c===false) return; el.appendChild(typeof c==='string'||typeof c==='number'?document.createTextNode(c):c); });
+  return el;
+}
+
+function render(){ const app=document.getElementById('app'); app.innerHTML=''; app.appendChild(buildView()); if(S.view==='candidate'&&!S.submitted&&!timerInt) startTimer(); }
+
+function buildView(){
+  if(S.view==='landing')     return buildLanding();
+  if(S.view==='admin-login') return buildLogin();
+  if(S.view==='admin')       return buildAdmin();
+  if(S.view==='candidate')   return buildCandidate();
+  if(S.view==='expired')     return buildMsg('⏰','Link Expired','This assessment link is no longer valid (3-day window closed). Please contact the QA team for a new link.');
+  if(S.view==='already_done')return buildMsg('✅','Already Submitted','You have already completed this assessment. Results have been sent to the QA team. Thank you!');
+  return buildLanding();
+}
+
+// ── LANDING ───────────────────────────────────────────────
+function buildLanding(){
+  return h('div',{className:'fade-in'},
+    h('div',{className:'hero'},
+      h('p',{className:'hero-eye'},'⚡ AI-Powered · Adaptive Difficulty · +4 / −1 Marking'),
+      h('h1',{className:'hero-title'},'QA Assessment',h('br'),h('span',{},'Platform')),
+      h('p',{className:'hero-sub'},'Generate AI-personalised 25-question tests from your QAP document and candidate resume. Difficulty-matched to experience. Results auto-emailed to your team.'),
+      h('div',{className:'hero-btns'},
+        h('button',{className:'btn btn-primary btn-lg',onClick:()=>set({view:'admin-login'})},'🔐 Admin Panel'),
+        h('button',{className:'btn btn-outline btn-lg',onClick:()=>window.open('[https://emailjs.com](https://emailjs.com)','_blank')},'📧 Setup EmailJS')
+      )
+    ),
+    h('div',{className:'page',style:{paddingTop:0}},
+      h('div',{className:'stat-grid',style:{marginBottom:24}},
+        h('div',{className:'stat-box'},h('div',{className:'stat-num'},'25'), h('div',{className:'stat-label'},'MCQs per test')),
+        h('div',{className:'stat-box'},h('div',{className:'stat-num'},'+4'), h('div',{className:'stat-label'},'correct marks')),
+        h('div',{className:'stat-box'},h('div',{className:'stat-num'},'-1'), h('div',{className:'stat-label'},'wrong marks')),
+        h('div',{className:'stat-box'},h('div',{className:'stat-num'},'4'),  h('div',{className:'stat-label'},'difficulty levels'))
+      ),
+      h('div',{className:'card'},
+        h('div',{className:'card-title'},'🎯 Four Adaptive Difficulty Levels'),
+        h('div',{className:'diff-grid'},
+          ...Object.entries(DIFF).map(([k,d])=>h('div',{className:'diff-card',style:{cursor:'default'}},
+            h('span',{className:'badge '+d.badge},d.label),
+            h('div',{className:'diff-card-title'},d.label),
+            h('div',{className:'diff-card-sub'},d.years)
+          ))
+        )
+      )
+    )
+  );
+}
+
+// ── ADMIN LOGIN ────────────────────────────────────────────
+function buildLogin(){
+  return h('div',{className:'page-narrow fade-in'},
+    h('button',{className:'btn btn-ghost',style:{marginBottom:20},onClick:()=>set({view:'landing',adminPassInput:'',passErr:''})},'← Back'),
+    h('div',{className:'card'},
+      h('div',{className:'card-title'},'🔐 Admin Login'),
+      h('div',{className:'form-group'},
+        h('label',{},'Password'),
+        h('input',{type:'password',placeholder:'Enter admin password',value:S.adminPassInput,
+          onInput:e=>{S.adminPassInput=e.target.value;S.passErr=''},
+          onKeydown:e=>{if(e.key==='Enter')doLogin()}}),
+        S.passErr?h('div',{className:'alert alert-danger',style:{marginTop:10}},S.passErr):null,
+        h('p',{style:{fontSize:12,color:'var(--text3)',marginTop:8}},'Default password: ',h('code',{},CFG.DEFAULT_ADMIN_PASSWORD))
+      ),
+      h('button',{className:'btn btn-primary btn-full btn-lg',onClick:doLogin},'Login →')
+    )
+  );
+}
+function doLogin(){ if(S.adminPassInput===getAdminPass()) set({view:'admin',passErr:''}); else set({passErr:'Incorrect password.'}); }
+
+// ── ADMIN PANEL ────────────────────────────────────────────
+function buildAdmin(){
+  return h('div',{className:'page fade-in'},
+    h('div',{className:'topbar'},
+      h('div',{className:'brand-mark'},'🎯'),
+      h('div',{},h('div',{className:'brand-name'},'QA Assessment Platform'),h('div',{className:'brand-tag'},'Admin Console')),
+      h('div',{style:{marginLeft:'auto'}},h('button',{className:'btn btn-ghost',onClick:()=>set({view:'landing'})},'← Exit'))
+    ),
+    h('div',{className:'tabs'},
+      h('button',{className:'tab'+(S.adminTab==='create'?' active':''),onClick:()=>set({adminTab:'create'})},'➕ New Assessment'),
+      h('button',{className:'tab'+(S.adminTab==='generated'?' active':''),onClick:()=>set({adminTab:'generated'})},'📋 Generated Tests'),
+      h('button',{className:'tab'+(S.adminTab==='candidates'?' active':''),onClick:()=>set({adminTab:'candidates'})},`👥 Candidates (${S.candidates.length})`),
+      h('button',{className:'tab'+(S.adminTab==='settings'?' active':''),onClick:()=>set({adminTab:'settings'})},'⚙️ Settings')
+    ),
+    S.adminTab==='create'    ?buildCreate():
+    S.adminTab==='generated' ?buildGenerated():
+    S.adminTab==='candidates'?buildCandidates():
+    buildSettings()
+  );
+}
+
+// ── CREATE TAB ─────────────────────────────────────────────
+function buildCreate(){
+  const f=S.form;
+  return h('div',{},
+    !S.resultEmails.length
+      ?h('div',{className:'alert alert-warn'},'⚠️ No result emails set. Go to ⚙️ Settings and add at least one before generating.')
+      :null,
+
+    h('div',{className:'card'},
+      h('div',{className:'card-title'},
+        h('span',{},'👥 Candidate Details & Resumes'),
+        h('button',{className:'btn btn-outline btn-sm', onClick:()=>{ S.form.candidates.push({name:'',email:'', difficulty:'knowledgeable', resumeText:'', resumeFileName:''}); render(); }}, '+ Add Candidate')
+      ),
+      
+      ...f.candidates.map((c, idx) => h('div',{className:'candidate-block'},
+        f.candidates.length > 1 ? h('button', {className:'btn btn-ghost', style:{position:'absolute', top:'8px', right:'8px', color:'var(--danger)', padding:'4px 8px'}, onClick:()=>{ f.candidates.splice(idx,1); render(); }}, 'Remove') : null,
+        
+        // Name & Email Row
+        h('div',{className:'form-row'},
+            h('div',{className:'form-group'},
+                h('label',{},'Candidate Name *'),
+                h('input',{type:'text',placeholder:'e.g. Priya Sharma',value:c.name,onInput:e=>{f.candidates[idx].name=e.target.value}})
+            ),
+            h('div',{className:'form-group'},
+                h('label',{},'Candidate Email *'),
+                h('input',{type:'email',placeholder:'candidate@company.com',value:c.email,onInput:e=>{f.candidates[idx].email=e.target.value}})
+            )
+        ),
+
+        // Difficulty & Resume Upload Row
+        h('div',{className:'form-row'},
+            h('div',{className:'form-group', style:{marginBottom:0}},
+                h('label',{},'Experience Level (Sets AI Difficulty)'),
+                h('select',{onChange:e=>{f.candidates[idx].difficulty=e.target.value}},
+                    ...Object.entries(DIFF).map(([k,d])=> h('option',{value:k, selected: c.difficulty === k ? 'selected' : false}, `${d.label} (${d.years})`))
+                )
+            ),
+            h('div',{className:'form-group', style:{marginBottom:0}},
+                h('label',{},'Candidate Resume (PDF)'),
+                h('div',{className:'dropzone', style:{borderColor: c.resumeFileName ? 'var(--accent)' : 'var(--border2)', color: c.resumeFileName ? 'var(--accent)' : 'var(--text2)', background: c.resumeFileName ? 'var(--aglow)' : 'transparent', cursor: c.resumeFileName ? 'default' : 'pointer'},
+                    onDragover: e => { if(!c.resumeFileName) e.preventDefault(); },
+                    onDrop: e => { if(!c.resumeFileName) { e.preventDefault(); handleIndividualResumeUpload(e, idx); } }
+                  },
+                  c.resumeText === 'Extracting PDF... Please wait.' ? '⏳ Extracting...' : 
+                  (c.resumeFileName ? 
+                      h('div', {style:{display:'flex', alignItems:'center', gap:'8px', position:'relative', zIndex:10}}, 
+                          h('span', {style: {whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '180px'}}, `📄 ${c.resumeFileName}`),
+                          h('button', {className:'btn btn-ghost btn-sm', style:{padding:'0 4px', color:'var(--danger)', fontSize:'18px', lineHeight:'1'}, onClick:(e) => removeResume(e, idx), title: 'Remove PDF'}, '×')
+                      )
+                  : '📁 Drag & Drop PDF here'),
+                  (!c.resumeFileName && c.resumeText !== 'Extracting PDF... Please wait.') ? h('input',{type:'file',accept:'.pdf',onChange:(e)=>handleIndividualResumeUpload(e, idx)}) : null
+                )
+            )
+        )
+      ))
+    ),
+
+    h('div',{className:'card'},
+      h('div',{className:'card-title'},
+        h('span',{},'📄 Quality Assurance Plan (Universal) ',h('span',{className:'badge badge-blue'},'75% of questions'))
+      ),
+      h('div',{className:'form-group'},
+        h('label',{},'Upload QAP Document'),
+        h('div',{className:'dropzone', style:{height: '60px', borderColor: S.form.qapFileName ? 'var(--accent)' : 'var(--border2)', color: S.form.qapFileName ? 'var(--accent)' : 'var(--text2)', background: S.form.qapFileName ? 'var(--aglow)' : 'var(--surface2)', cursor: S.form.qapFileName ? 'default' : 'pointer'},
+            onDragover: e => { if(!S.form.qapFileName) e.preventDefault(); },
+            onDrop: e => { if(!S.form.qapFileName) { e.preventDefault(); handleQAPUpload(e); } }
+          },
+            S.form.qapText === 'Extracting PDF... Please wait.' ? '⏳ Extracting...' : 
+            (S.form.qapFileName ? 
+                h('div', {style:{display:'flex', alignItems:'center', gap:'8px', position:'relative', zIndex:10}}, 
+                    h('span', {style: {whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '300px'}}, `📄 ${S.form.qapFileName}`),
+                    h('button', {className:'btn btn-ghost btn-sm', style:{padding:'0 4px', color:'var(--danger)', fontSize:'20px', lineHeight:'1'}, onClick:removeQAP, title: 'Remove PDF'}, '×')
+                )
+            : '📁 Drag & Drop QAP PDF here'),
+            (!S.form.qapFileName && S.form.qapText !== 'Extracting PDF... Please wait.') ? h('input',{type:'file',accept:'.pdf',onChange:handleQAPUpload}) : null
+        )
+      ),
+      h('p',{style:{fontSize:12,color:'var(--text3)', marginTop: 8}},'💡 Note: If you would like specific questions to be included in the exam, please upload a PDF containing the questions along with a corresponding answers. Otherwise, you may leave this field blank and the AI will automatically generate the questions.')
+    ),
+
+    h('div',{className:'card'},
+      h('div',{className:'card-title'},'📊 Marking Scheme'),
+      h('div',{className:'mark-chips'},
+        h('span',{className:'chip chip-green'},'+4 marks — correct answer'),
+        h('span',{className:'chip chip-red'},'-1 mark — wrong answer'),
+        h('span',{className:'chip chip-gray'},'0 marks — skipped')
+      ),
+      h('div',{className:'info-row'},h('span',{className:'info-label'},'Total questions'),h('span',{className:'info-val'},'25')),
+      h('div',{className:'info-row'},h('span',{className:'info-label'},'Passing criteria'),h('span',{className:'info-val'},'35%')),
+      h('div',{className:'info-row'},h('span',{className:'info-label'},'Max marks'),h('span',{className:'info-val'},MAX_MARKS+' marks'))
+    ),
+
+    S.generating?h('div',{className:'card loading-wrap'},
+      h('div',{className:'spinner'}),
+      h('div',{id:'gl',className:'loading-label'},S.genStep),
+      h('div',{className:'progress-track',style:{marginTop:14}},h('div',{id:'gb',className:'progress-fill',style:{width:S.genPct+'%'}}))
+    ):null,
+    S.genStep&&S.genStep.startsWith('Error')?h('div',{className:'alert alert-danger'},'⚠️ '+S.genStep):null,
+    h('button',{className:'btn btn-primary btn-full btn-lg'+(S.generating?' btn-loading':''),disabled:S.generating,onClick:generate},S.generating?'':'🤖 Generate Unique Tests for Candidates')
+  );
+}
+
+// ── GENERATED TAB ──────────────────────────────────────────
+function buildGenerated(){
+  if(!S.candidates.length) return h('div',{className:'card',style:{textAlign:'center',padding:'48px 28px'}},h('div',{style:{fontSize:48,marginBottom:16}},'📭'),h('p',{style:{color:'var(--text3)'}},'No assessments generated yet.'));
+  
+  return h('div',{},
+    S.mailStatus==='sent' ? h('div',{className:'alert alert-success'},'📧 Invites emailed to candidates successfully!') : null,
+    S.mailStatus==='not_configured' ? h('div',{className:'alert alert-info'},'📋 Email sending skipped (EmailJS not configured or blocked by browser sandbox). Copy the links below and send to candidates manually.') : null,
+    h('p',{style:{fontSize:13,color:'var(--text2)',marginBottom:16}},'All generated tests are saved below for their lifetime. You can view, copy links, or edit their names.'),
+    ...S.candidates.map((c, idx) => {
+        return h('div',{className:'card', style:{padding: '16px 20px', marginBottom: '12px'}},
+          h('div',{className:'card-title', style:{marginBottom: '10px'}},
+            h('div',{style:{display:'flex', alignItems:'center', gap:'8px', flexWrap: 'wrap'}},
+                h('span',{},c.testName || `${c.name}'s Assessment`),
+                h('button',{className:'btn btn-ghost btn-sm', onClick:()=>{
+                    const newName = prompt("Enter a new name for this test:", c.testName);
+                    if(newName){
+                        S.candidates[idx].testName = newName;
+                        localStorage.setItem('qa_test_'+c.id, JSON.stringify(S.candidates[idx]));
+                        save(); render();
+                    }
+                }},'✏️ Edit Name'),
+                h('button',{className:'btn btn-ghost btn-sm', onClick:()=>set({previewTest: c})},'👁️ View Questions') 
+            ),
+            h('span',{className:'badge '+(c.status==='Completed'?'badge-green':'badge-amber')},c.status)
+          ),
+          h('div',{style:{fontSize:12,color:'var(--text3)',marginBottom:'10px'}}, `Candidate: ${c.name} (${c.email}) · Created: ${c.createdAt}`),
+          h('div',{className:'link-box', style:{marginBottom: '0'}},
+            h('div',{className:'link-url'}, c.link && !c.link.startsWith('?') ? c.link : '⚠️ No Base URL set — see ⚙️ Settings → Test Link Base URL'),
+            h('button',{className:'btn btn-outline btn-sm',style:{flexShrink:0},onClick:()=>{
+              if(!c.link || c.link.startsWith('?')){
+                alert('⚠️ Link is incomplete because no Base URL is configured.\n\nGo to ⚙️ Settings → "Test Link Base URL", enter the deployed URL of this HTML file, then regenerate the test.');
+                return;
+              }
+              navigator.clipboard?.writeText(c.link);
+              alert('✅ Link copied! Send to: '+c.email);
+            }},'📋 Copy')
+          )
+        )
+    }),
+    
+    S.previewTest ? buildPreviewModal(S.previewTest) : null
+  );
+}
+
+function buildPreviewModal(c) {
+    const qs = c.questions || [];
+    return h('div',{className:'modal-overlay', onClick: (e) => { if(e.target.className==='modal-overlay') set({previewTest: null}) }},
+        h('div',{className:'modal-content fade-in'},
+            h('div',{className:'modal-header'},
+                h('div',{className:'card-title', style: {margin: 0}}, `Test Preview: ${c.testName}`),
+                h('button',{className:'btn btn-ghost', onClick:()=>set({previewTest: null})},'❌ Close')
+            ),
+            h('div',{className:'modal-body'},
+                ...qs.map((q,i)=> h('div',{className:'mcq-item'},
+                    h('div',{className:'mcq-meta'},
+                        h('span',{className:'badge '+(q.type==='qap'?'badge-blue':'badge-teal')},q.type==='qap'?'📋 QAP':'👤 Resume'),
+                        h('span',{style:{color:'var(--text3)',fontSize:11}},'Q'+(i+1)+' of '+qs.length)
+                    ),
+                    h('div',{className:'mcq-q'},q.question),
+                    h('div',{className:'mcq-options'},...q.options.map((o,oi)=>
+                        h('div',{className:'mcq-opt'+(oi===q.correct?' correct':''),style:{cursor:'default'}},
+                            h('div',{className:'opt-letter'},['A','B','C','D'][oi]),h('span',{},o.replace(/^[A-D]\.\s*/,'')),
+                            oi===q.correct?h('span',{style:{marginLeft:'auto',fontSize:11,color:'var(--success)',flexShrink:0}},'✓ correct'):null
+                        )
+                    )),
+                    q.explanation?h('div',{className:'explanation'},'💡 '+q.explanation):null
+                ))
+            )
+        )
+    );
+}
+
+// ── CANDIDATES TAB (With Detailed View Modal & Sorting) ───────────────
+function buildCandidates(){
+  if(!S.candidates.length) return h('div',{className:'card',style:{textAlign:'center',padding:'48px 28px'}},h('div',{style:{fontSize:48,marginBottom:16}},'👥'),h('p',{style:{color:'var(--text3)'}},'No candidates yet.'));
+  
+  // Sort candidates by score descending (highest score first)
+  const sortedCandidates = [...S.candidates].sort((a, b) => {
+      const scoreA = a.score !== null ? a.score : -1;
+      const scoreB = b.score !== null ? b.score : -1;
+      return scoreB - scoreA;
+  });
+
+  return h('div',{},
+    ...sortedCandidates.map(c=>{
+      const d=DIFF[c.difficulty];
+      const isComplete = c.status === 'Completed';
+      const passed = c.score >= 35;
+      
+      return h('div',{className:'candidate-card'},
+        h('div',{className:'avatar'},c.name?.charAt(0)?.toUpperCase()||'?'),
+        h('div',{style:{flex:1,minWidth:0}},
+          h('div',{style:{fontWeight:600,fontSize:14,color:'var(--text)'}},c.name),
+          h('div',{style:{fontSize:12,color:'var(--text3)'}},c.email+' · '+c.createdAt)
+        ),
+        d?h('span',{className:'badge '+d.badge,style:{flexShrink:0}},d.label):null,
+        c.marks!=null?h('div',{style:{textAlign:'right',flexShrink:0}},
+          h('div',{style:{fontSize:14,fontWeight:700,color:'var(--accent)'}},c.marks+'/'+MAX_MARKS+' marks'),
+          h('div',{style:{fontSize:11,color:'var(--text3)',fontFamily:'var(--mono)'}},c.score+'% · '+c.timeTaken)
+        ):null,
+        h('div', {style:{display:'flex', gap:'6px', alignItems:'center', flexShrink:0}},
+            h('span',{className:'badge '+(isComplete?'badge-green':'badge-amber')},c.status),
+            isComplete ? h('span',{className:'badge '+(passed?'badge-green':'badge-red')}, passed ? 'PASS' : 'FAIL') : null
+        ),
+        isComplete 
+          ? h('button',{className:'btn btn-primary btn-sm',style:{flexShrink:0},onClick:()=>set({viewCandidate: c})},'📊 View Details')
+          : h('button',{className:'btn btn-outline btn-sm',style:{flexShrink:0},onClick:()=>{navigator.clipboard?.writeText(c.link);alert('Link copied for '+c.name)}},'🔗 Copy Link')
+      );
+    }),
+    
+    S.viewCandidate ? buildCandidateDetailsModal(S.viewCandidate) : null
+  );
+}
+
+function buildCandidateDetailsModal(c) {
+    const qs = c.questions || [];
+    const ans = c.finalAnswers || {};
+    const passed = c.score >= 35;
+    
+    return h('div',{className:'modal-overlay', onClick: (e) => { if(e.target.className==='modal-overlay') set({viewCandidate: null}) }},
+        h('div',{className:'modal-content fade-in'},
+            h('div',{className:'modal-header'},
+                h('div',{className:'card-title', style:{margin:0, display:'flex', alignItems:'center', gap:'10px'}}, 
+                    `Detailed Analysis: ${c.name}`,
+                    h('span', {className:'badge '+(passed?'badge-green':'badge-red')}, passed ? 'PASS (>= 35%)' : 'FAIL (< 35%)')
+                ),
+                h('button',{className:'btn btn-ghost', onClick:()=>set({viewCandidate: null})},'❌ Close')
+            ),
+            h('div',{className:'modal-body'},
+                h('div',{className:'stat-grid',style:{marginBottom:24}},
+                    h('div',{className:'stat-box'},h('div',{className:'stat-num'},c.score+'%'), h('div',{className:'stat-label'},'Percentage')),
+                    h('div',{className:'stat-box'},h('div',{className:'stat-num'},c.marks), h('div',{className:'stat-label'},'Total Marks')),
+                    h('div',{className:'stat-box'},h('div',{className:'stat-num'},c.timeTaken), h('div',{className:'stat-label'},'Time Taken'))
+                ),
+                ...qs.map((q,i)=>{
+                    const a = ans[i];
+                    const sk = a === undefined || a === null;
+                    const isCorrect = a === q.correct;
+                    
+                    return h('div',{className:'mcq-item'},
+                        h('div',{className:'mcq-meta'},
+                            h('span',{className:'badge '+(q.type==='qap'?'badge-blue':'badge-teal')},q.type==='qap'?'📋 QAP':'👤 Resume'),
+                            h('span',{style:{fontSize:11,color:'var(--text3)'}},'Q'+(i+1)),
+                            sk ? h('span',{className:'badge badge-amber'},'⊘ Skipped · 0') :
+                            isCorrect ? h('span',{className:'badge badge-green'},'✓ Correct · +4') :
+                            h('span',{className:'badge badge-red'},'✗ Wrong · -1')
+                        ),
+                        h('div',{className:'mcq-q'},q.question),
+                        h('div',{className:'mcq-options'},...q.options.map((o,oi)=>{
+                            const isCandidateAnswer = (oi === a);
+                            const isActualCorrect = (oi === q.correct);
+                            
+                            let optClass = 'mcq-opt';
+                            let tag = null;
+                            
+                            if (isCandidateAnswer && isActualCorrect) {
+                                optClass += ' correct';
+                                tag = h('span',{style:{marginLeft:'auto',fontSize:11,color:'var(--success)',flexShrink:0}},'✓ Candidate selected (Correct)');
+                            } else if (isCandidateAnswer && !isActualCorrect) {
+                                optClass += ' wrong';
+                                tag = h('span',{style:{marginLeft:'auto',fontSize:11,color:'var(--danger)',flexShrink:0}},'✗ Candidate selected (Wrong)');
+                            } else if (!isCandidateAnswer && isActualCorrect) {
+                                optClass += ' correct'; 
+                                tag = h('span',{style:{marginLeft:'auto',fontSize:11,color:'var(--success)',flexShrink:0}},'✓ Correct Answer');
+                            }
+
+                            return h('div',{className:optClass,style:{cursor:'default'}},
+                                h('div',{className:'opt-letter'},['A','B','C','D'][oi]),h('span',{},o.replace(/^[A-D]\.\s*/,'')),
+                                tag
+                            )
+                        })),
+                        q.explanation?h('div',{className:'explanation'},'💡 '+q.explanation):null
+                    );
+                })
+            )
+        )
+    );
+}
+
+// ── SETTINGS TAB ───────────────────────────────────────────
+function buildSettings(){
+  return h('div',{},
+    
+    // Admin Security Settings
+    h('div',{className:'card'},
+      h('div',{className:'card-title'},'🔐 Security & Admin Password'),
+      h('p',{style:{fontSize:13,color:'var(--text2)',marginBottom:16,lineHeight:1.6}},
+        'Change the administrator password. Only the admin has access to this panel to view results and generate tests.'
+      ),
+      h('div',{className:'form-row'},
+        h('div',{className:'form-group'},
+          h('label',{},'New Password'),
+          h('input',{type:'password',placeholder:'Enter new password',value:S.newPassInput,onInput:e=>{S.newPassInput=e.target.value; S.passChangeMsg='';}})
+        ),
+        h('div',{className:'form-group'},
+          h('label',{},'Confirm Password'),
+          h('input',{type:'password',placeholder:'Confirm new password',value:S.confirmPassInput,onInput:e=>{S.confirmPassInput=e.target.value; S.passChangeMsg='';}})
+        )
+      ),
+      S.passChangeMsg ? h('div',{className:S.passChangeMsg.includes('✅')?'alert alert-success':'alert alert-danger',style:{marginTop:10}},S.passChangeMsg) : null,
+      h('button',{className:'btn btn-primary', onClick:()=>{
+          if(!S.newPassInput) return set({passChangeMsg:'⚠️ Please enter a password.'});
+          if(S.newPassInput !== S.confirmPassInput) return set({passChangeMsg:'⚠️ Passwords do not match.'});
+          localStorage.setItem('qa_admin_pass', S.newPassInput);
+          set({passChangeMsg:'✅ Password updated successfully.', newPassInput:'', confirmPassInput:''});
+      }},'Update Password')
+    ),
+
+    // Result emails
+    h('div',{className:'card'},
+      h('div',{className:'card-title'},'📧 Result Email Recipients',h('span',{className:'badge badge-blue'},S.resultEmails.length+' configured')),
+      h('p',{style:{fontSize:13,color:'var(--text2)',marginBottom:16,lineHeight:1.6}},
+        'When a candidate submits the test, the score, marks breakdown, time taken, and full answer sheet are emailed to EVERY address below. Add or remove addresses anytime.'
+      ),
+      h('div',{className:'form-group'},
+        h('label',{},'Add Email Address'),
+        h('div',{style:{display:'flex',gap:8}},
+          h('input',{type:'email',id:'nei',placeholder:'reviewer@company.com',value:S.newEmailInput,
+            onInput:e=>{S.newEmailInput=e.target.value},
+            onKeydown:e=>{if(e.key==='Enter')addEmail()}}),
+          h('button',{className:'btn btn-primary',style:{flexShrink:0},onClick:addEmail},'+ Add')
+        )
+      ),
+      h('div',{className:'email-tags-wrap'},
+        S.resultEmails.length
+          ?S.resultEmails.map(em=>h('div',{className:'email-tag'},em,h('button',{onClick:()=>removeEmail(em),title:'Remove'},'×')))
+          :h('p',{style:{fontSize:12,color:'var(--text3)'}},'No emails added yet. Add at least one to receive results.')
+      ),
+      !S.resultEmails.length?h('div',{className:'alert alert-warn',style:{marginTop:12}},'⚠️ Required — add at least one email before generating assessments.'):null
+    ),
+
+    // Base URL config
+    h('div',{className:'card'},
+      h('div',{className:'card-title'},'🔗 Test Link Base URL'),
+      h('p',{style:{fontSize:13,color:'var(--text2)',marginBottom:12,lineHeight:1.6}},
+        'Set the deployed URL of this HTML file so candidate links are correct and shareable. Example: ',
+        h('code',{},'https://yoursite.com/qa-test.html')
+      ),
+      h('div',{style:{display:'flex',gap:8}},
+        h('input',{type:'text',id:'base-url-input',placeholder:'https://yoursite.com/qa-test.html',
+          value: CFG.BASE_URL || '',
+          onInput: e => { CFG.BASE_URL = e.target.value.trim(); }
+        }),
+        h('button',{className:'btn btn-primary',style:{flexShrink:0},onClick:()=>{
+          const val = (document.getElementById('base-url-input')?.value||'').trim();
+          CFG.BASE_URL = val;
+          localStorage.setItem('qa_base_url', val);
+          alert(val ? '✅ Base URL saved: ' + val : '✅ Base URL cleared.');
+        }},'Save')
+      ),
+      !CFG.BASE_URL ? h('div',{className:'alert alert-warn',style:{marginTop:12}},
+        '⚠️ No Base URL set. Links will show as "?test=..." which works only if you open the file directly in a browser (not via Claude). Set your deployed file URL above.'
+      ) : h('div',{className:'alert alert-success',style:{marginTop:12}},
+        '✅ Links will use: ' + CFG.BASE_URL.replace(/\?.*$/,'')
+      )
+    ),
+
+    // Marking
+    h('div',{className:'card'},
+      h('div',{className:'card-title'},'📊 Marking Scheme'),
+      h('div',{className:'info-row'},h('span',{className:'info-label'},'Correct answer'),h('span',{className:'info-val',style:{color:'var(--success)'}},'+4 marks')),
+      h('div',{className:'info-row'},h('span',{className:'info-label'},'Wrong answer'),h('span',{className:'info-val',style:{color:'var(--danger)'}},'-1 mark')),
+      h('div',{className:'info-row'},h('span',{className:'info-label'},'Skipped / not answered'),h('span',{className:'info-val'},'0 marks')),
+      h('div',{className:'info-row'},h('span',{className:'info-label'},'Total questions'),h('span',{className:'info-val'},'25')),
+      h('div',{className:'info-row'},h('span',{className:'info-label'},'Passing criteria'),h('span',{className:'info-val'},'35%')),
+      h('div',{className:'info-row'},h('span',{className:'info-label'},'Maximum possible score'),h('span',{className:'info-val'},MAX_MARKS+' marks'))
+    ),
+
+    // EmailJS
+    h('div',{className:'card'},
+      h('div',{className:'card-title'},'⚙️ EmailJS Status'),
+      h('p',{style:{fontSize:13,color:'var(--text2)',marginBottom:12,lineHeight:1.6}},
+        'Open ',h('code',{},'index.html'),' and fill the ',h('code',{},'CFG'),' block at top with your EmailJS credentials to enable real email sending.'
+      ),
+      h('div',{className:'info-row'},h('span',{className:'info-label'},'Status'),
+        h('span',{className:ejsOk()?'badge badge-green':'badge badge-amber'},ejsOk()?'✓ Configured':'Not configured — emails simulated')
+      ),
+      !ejsOk()?h('button',{className:'btn btn-outline',style:{marginTop:12},onClick:()=>window.open('[https://emailjs.com](https://emailjs.com)','_blank')},'→ Set up EmailJS free'):null
+    )
+  );
+}
+
+function addEmail(){
+  const v=(S.newEmailInput||'').trim().toLowerCase();
+  const err = validateEmail(v);
+  if(err) return alert(err);
+  if(S.resultEmails.includes(v)) return alert('This email is already in the list.');
+  S.resultEmails.push(v); S.newEmailInput=''; save(); render();
+}
+function removeEmail(em){ S.resultEmails=S.resultEmails.filter(e=>e!==em); save(); render(); }
+
+// ── CANDIDATE TEST ─────────────────────────────────────────
+function buildCandidate(){
+  const qs=S.activeTest?.questions||[];
+  if(S.submitted) return buildResults(qs);
+  const d=DIFF[S.activeTest?.difficulty];
+  return h('div',{className:'page fade-in'},
+    h('div',{className:'timer-bar'},
+      h('div',{style:{fontSize:20}},'⏱️'),
+      h('div',{id:'td',className:'timer-display'},fmt(S.elapsed)),
+      h('div',{style:{flex:1,minWidth:0}},
+        h('div',{style:{fontWeight:600,fontSize:14,color:'var(--text)',display:'flex',alignItems:'center',gap:8}},
+          (S.activeTest?.name||'Candidate')+"'s Assessment",
+          d?h('span',{className:'badge '+d.badge},d.label):null
+        ),
+        h('div',{id:'ac',style:{fontSize:12,color:'var(--text3)',fontFamily:'var(--mono)'}},'0 of '+qs.length+' answered')
+      ),
+      h('div',{style:{display:'flex',alignItems:'center',gap:8}},
+        h('div',{style:{width:80}},h('div',{className:'progress-track'},h('div',{id:'pf',className:'progress-fill',style:{width:'0%'}}))),
+        h('div',{id:'pp',style:{fontSize:13,color:'var(--accent)',fontWeight:700,fontFamily:'var(--mono)',minWidth:34}},'0%')
+      )
+    ),
+
+    h('div',{className:'mark-chips',style:{marginBottom:20}},
+      h('span',{className:'chip chip-green'},'+4 correct'),
+      h('span',{className:'chip chip-red'},'-1 wrong'),
+      h('span',{className:'chip chip-gray'},'0 skipped — skip if unsure!')
+    ),
+
+    ...qs.map((q,i)=>h('div',{className:'mcq-item',id:'qi'+i},
+      h('div',{className:'mcq-meta'},
+        h('span',{className:'badge '+(q.type==='qap'?'badge-blue':'badge-teal')},q.type==='qap'?'📋 QAP':'👤 Resume'),
+        h('span',{style:{color:'var(--text3)',fontSize:11}},'Q'+(i+1)+' of '+qs.length),
+        h('span',{style:{color:'var(--text3)',fontSize:11,fontFamily:'var(--mono)'}},'(+4 / -1 / 0)')
+      ),
+      h('div',{className:'mcq-q'},q.question),
+      h('div',{className:'mcq-options'},...q.options.map((o,oi)=>
+        h('div',{className:'mcq-opt'+(S.answers[i]===oi?' selected':''),
+          onClick:()=>{
+            S.answers[i]=oi;
+            document.querySelectorAll('#qi'+i+' .mcq-opt').forEach((el,j)=>el.className='mcq-opt'+(j===oi?' selected':''));
+            const ans=Object.keys(S.answers).length,tot=qs.length,pct=Math.round(ans/tot*100);
+            const pf=document.getElementById('pf');if(pf)pf.style.width=pct+'%';
+            const ac=document.getElementById('ac');if(ac)ac.textContent=ans+' of '+tot+' answered';
+            const pp=document.getElementById('pp');if(pp)pp.textContent=pct+'%';
+          }},
+          h('div',{className:'opt-letter'},['A','B','C','D'][oi]),h('span',{},o.replace(/^[A-D]\.\s*/,''))
+        )
+      ))
+    )),
+
+    h('div',{style:{position:'sticky',bottom:20,marginTop:24}},
+      h('button',{className:'btn btn-primary btn-full btn-lg',
+        onClick:()=>{ const a=Object.keys(S.answers).length,t=qs.length; if(a<t&&!confirm(`You've answered ${a} of ${t}. Unanswered = 0 marks. Submit?`)) return; submitTest(); }
+      },'✅ Submit Assessment ('+Object.keys(S.answers).length+'/'+qs.length+' answered)')
+    )
+  );
+}
+
+// ── RESULTS REVIEW SCREEN AFTER CANDIDATE SUBMITS ───────────────
+function buildResults(qs){
+  const sd=calcScore(qs,S.answers);
+  const passed = sd.pct >= 35;
+  const grade = passed ? (sd.pct>=80?'Excellent':sd.pct>=60?'Good':'Pass') : 'Fail (< 35%)';
+  const gc = sd.pct>=80?'var(--success)':sd.pct>=60?'var(--accent2)':sd.pct>=35?'var(--warn)':'var(--danger)';
+  const d=DIFF[S.activeTest?.difficulty];
+  return h('div',{className:'page-narrow fade-in',style:{paddingTop:40}},
+    h('div',{className:'card',style:{textAlign:'center',padding:'36px 28px'}},
+      h('div',{style:{fontSize:44,marginBottom:12}},passed?(sd.pct>=60?'🎉':'📋'):'❌'),
+      h('h2',{style:{fontFamily:'var(--display)',fontSize:22,fontWeight:800,color:'var(--text)',marginBottom:8}},'Assessment Submitted!'),
+      d?h('div',{style:{marginBottom:14}},h('span',{className:'badge '+d.badge},d.label)):null,
+      h('div',{className:'score-ring'},h('div',{className:'score-big'},sd.marks),h('div',{className:'score-of'},'out of '+MAX_MARKS)),
+      h('div',{style:{fontSize:30,fontWeight:800,color:gc,marginBottom:4,fontFamily:'var(--display)'}},sd.pct+'%'),
+      h('div',{style:{fontSize:13,color:'var(--text3)',marginBottom:20}},grade),
+      h('div',{className:'card',style:{textAlign:'left',padding:'14px 18px',marginBottom:16}},
+        h('div',{className:'info-row'},h('span',{className:'info-label'},'Correct'),h('span',{style:{color:'var(--success)',fontWeight:600}},sd.correct+' × +4 = +'+(sd.correct*4)+' marks')),
+        h('div',{className:'info-row'},h('span',{className:'info-label'},'Wrong'),h('span',{style:{color:'var(--danger)',fontWeight:600}},sd.wrong+' × -1 = -'+sd.wrong+' mark'+(sd.wrong!==1?'s':''))),
+        h('div',{className:'info-row'},h('span',{className:'info-label'},'Skipped'),h('span',{style:{color:'var(--text3)',fontWeight:600}},sd.skipped+' × 0 = 0 marks')),
+        h('div',{className:'info-row'},h('span',{className:'info-label'},'Final Score'),h('span',{style:{color:'var(--accent)',fontWeight:700}},sd.marks+' / '+MAX_MARKS+' ('+sd.pct+'%)')),
+        h('div',{className:'info-row'},h('span',{className:'info-label'},'Time taken'),h('span',{className:'info-val'},sd.timeTaken))
+      ),
+      S.mailStatus==='sending'       ?h('div',{className:'alert alert-warn'},'📧 Sending results to team…'):null,
+      S.mailStatus==='sent'          ?h('div',{className:'alert alert-success'},'✅ Results emailed to assessment team!'):null,
+      S.mailStatus==='not_configured'?h('div',{className:'alert alert-info'},'📋 Results saved to Admin Panel. Configure EmailJS to auto-email team.'):null
+    ),
+    
+    h('div', {style:{display: 'flex', gap: '10px', marginBottom: '16px'}}, 
+        h('button',{className:'btn btn-outline',style:{flex: '1'},onClick:()=>set({reviewMode:!S.reviewMode})},
+          S.reviewMode?'▲ Hide Review':'📋 Review Answers & Explanations'
+        ),
+        h('button',{className:'btn btn-primary',style:{flex: '1'},onClick:()=>{
+            window.history.replaceState({}, document.title, window.location.pathname);
+            set({view:'landing', reviewMode: false, activeTest: null, submitted: false, answers: {}, elapsed: 0});
+        }},'🏠 Back to Home')
+    ),
+
+    S.reviewMode?h('div',{},...qs.map((q,i)=>{
+      const a=S.answers[i],ok=a===q.correct,sk=a===undefined||a===null;
+      return h('div',{className:'mcq-item'},
+        h('div',{className:'mcq-meta'},
+          h('span',{className:'badge '+(q.type==='qap'?'badge-blue':'badge-teal')},q.type==='qap'?'📋 QAP':'👤 Resume'),
+          h('span',{style:{fontSize:11,color:'var(--text3)'}},'Q'+(i+1)),
+          sk?h('span',{className:'badge badge-amber'},'⊘ Skipped · 0'):
+          ok?h('span',{className:'badge badge-green'},'✓ Correct · +4'):
+             h('span',{className:'badge badge-red'},'✗ Wrong · -1')
+        ),
+        h('div',{className:'mcq-q'},q.question),
+        h('div',{className:'mcq-options'},...q.options.map((o,oi)=>{
+            const isCandidateAnswer = (oi === a);
+            const isActualCorrect = (oi === q.correct);
+            
+            let optClass = 'mcq-opt';
+            let tag = null;
+            
+            if (isCandidateAnswer && isActualCorrect) {
+                optClass += ' correct';
+                tag = h('span',{style:{marginLeft:'auto',fontSize:11,color:'var(--success)',flexShrink:0}},'✓ You selected (Correct)');
+            } else if (isCandidateAnswer && !isActualCorrect) {
+                optClass += ' wrong';
+                tag = h('span',{style:{marginLeft:'auto',fontSize:11,color:'var(--danger)',flexShrink:0}},'✗ You selected (Wrong)');
+            } else if (!isCandidateAnswer && isActualCorrect) {
+                optClass += ' correct'; 
+                tag = h('span',{style:{marginLeft:'auto',fontSize:11,color:'var(--success)',flexShrink:0}},'✓ Correct Answer');
+            }
+
+            return h('div',{className:optClass,style:{cursor:'default'}},
+                h('div',{className:'opt-letter'},['A','B','C','D'][oi]),h('span',{},o.replace(/^[A-D]\.\s*/,'')),
+                tag
+            )
+        })),
+        q.explanation?h('div',{className:'explanation'},'💡 '+q.explanation):null
+      );
+    })):null
+  );
+}
+
+function buildMsg(icon,title,msg){
+  return h('div',{className:'page-narrow fade-in',style:{paddingTop:80,textAlign:'center'}},
+    h('div',{style:{fontSize:64,marginBottom:24}},icon),
+    h('h2',{style:{fontFamily:'var(--display)',fontSize:24,fontWeight:800,color:'var(--text)',marginBottom:12}},title),
+    h('p',{style:{color:'var(--text2)'}},msg)
+  );
+}
+
+// ── Demo content ──────────────────────────────────────────
+const DEMO_QAP=`Quality Assurance Plan v3.0 — ISO 9001:2015\n\n1. Document Control & Records Management\n   - Revision control per Clause 7.5; Master Document Register (MDR)\n2. Non-Conformance Reporting (NCR)\n   - Initiation within 24h; Dispositions: rework, repair, use-as-is (concession), scrap\n3. Root Cause Analysis: 5-Why, Fishbone, FTA for critical failures\n4. CAPA: 8D process; effectiveness review at 30/60/90 days\n5. Inspection & Test Plans (ITP): IMI, in-process, FAT sign-off\n6. SPC: Xbar-R, P-chart, C-chart; Cpk ≥ 1.33; OCAP\n7. MSA / Gauge R&R: GRR < 10% preferred, <30% marginal; bias, linearity, stability\n8. Supplier Quality: ASL, annual critical audits, FAI per AS9102, PPAP\n9. Customer Complaints: 8D within 10 days; containment within 24h\n10. KPIs: PPM, FPY, COPQ, OTD, Customer Return Rate`;
+const DEMO_RESUME=`JOHN SMITH — Senior QA Engineer\nBosch India 2019–2024: IATF 16949 implementation, PPAP for 12 launches, PPM 450→68 using SPC, MSA/GR&R on 25+ gauges, 8D for OEM complaints\nTata Motors 2015–2019: Incoming inspection, CMM (ZEISS CONTURA), NCR/CAPA in SAP QM, supplier audits\nCertifications: CSSGB (ASQ 2021), IATF 16949 Auditor (TÜV 2020), AS9100D\nSkills: APQP, PPAP, DFMEA/PFMEA, MSA, SPC; Minitab 21, SAP QM; CMM operation\nIndustries: Automotive, Aerospace fasteners; B.E. Mechanical, Pune Univ 2015`;
+
+// Boot
+checkURL().then(handled => { if(!handled) render(); });
+</script>
+</body>
+</html>
