@@ -227,35 +227,40 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
+      console.log(`[EMAIL] Attempting to send ${type} from ${GMAIL_USER}`);
+
       if (type === "candidate_invite") {
+        console.log(`[EMAIL] invite → ${data.to_email}`);
         await transporter.sendMail({
           from: `"QA Assessment" <${GMAIL_USER}>`,
           to: data.to_email,
           subject: `📋 Your Assessment Invitation — ${data.to_name}`,
           html: candidateEmailHTML(data)
         });
-        console.log(`[EMAIL] invite sent to ${data.to_email}`);
+        console.log(`[EMAIL] invite SENT to ${data.to_email}`);
       }
 
       else if (type === "results") {
         // Send to all result recipients
         for (const to of data.result_emails) {
+          console.log(`[EMAIL] results → ${to}`);
           await transporter.sendMail({
             from: `"QA Assessment" <${GMAIL_USER}>`,
             to,
             subject: `📊 Assessment Result — ${data.candidate_name} (${data.score_pct}%)`,
             html: resultsEmailHTML(data)
           });
-          console.log(`[EMAIL] results sent to ${to}`);
+          console.log(`[EMAIL] results SENT to ${to}`);
         }
         // Also send result to the candidate
+        console.log(`[EMAIL] candidate result → ${data.candidate_email}`);
         await transporter.sendMail({
           from: `"QA Assessment" <${GMAIL_USER}>`,
           to: data.candidate_email,
           subject: `✅ Your Assessment Result — ${data.score_pct}%`,
           html: candidateResultEmailHTML(data)
         });
-        console.log(`[EMAIL] candidate result sent to ${data.candidate_email}`);
+        console.log(`[EMAIL] candidate result SENT to ${data.candidate_email}`);
       }
 
       res.writeHead(200, { "Content-Type": "application/json" });
