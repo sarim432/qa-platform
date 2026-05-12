@@ -22,6 +22,9 @@ const HTML_FILE = path.join(__dirname, "test.html");
 // In-memory test store
 const STORE = {};
 
+// In-memory config store (result emails saved by admin, used when candidates submit)
+const CONFIG = { resultEmails: [] };
+
 if (!API_KEY)   console.warn("WARNING: ANTHROPIC_API_KEY not set. Add it in Railway → Variables.");
 if (!GMAIL_USER || !GMAIL_PASS) console.warn("WARNING: GMAIL_USER or GMAIL_PASS not set. Emails will not be sent.");
 
@@ -216,6 +219,26 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // ── Save/fetch config (result emails) ──────────────────────────────────────
+  if (req.method === "POST" && pathname === "/config") {
+    try {
+      const data = JSON.parse(await readBody(req));
+      if (Array.isArray(data.resultEmails)) {
+        CONFIG.resultEmails = data.resultEmails;
+        console.log(`[CONFIG] result emails updated: ${CONFIG.resultEmails.join(", ")}`);
+      }
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: true }));
+    } catch(e) { res.writeHead(500); res.end(JSON.stringify({ error: e.message })); }
+    return;
+  }
+
+  if (req.method === "GET" && pathname === "/config") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ resultEmails: CONFIG.resultEmails }));
+    return;
+  }
+
   // ── Send email ──────────────────────────────────────────────────────────────
   if (req.method === "POST" && pathname === "/send-email") {
     try {
@@ -241,8 +264,17 @@ const server = http.createServer(async (req, res) => {
       }
 
       else if (type === "results") {
+        // Use emails from request body; fall back to server-stored config
+        const recipientList = (data.result_emails && data.result_emails.length)
+          ? data.result_emails
+          : CONFIG.resultEmails;
+
+        if (!recipientList.length) {
+          console.warn("[EMAIL] No result recipients configured — skipping admin emails.");
+        }
+
         // Send to all result recipients
-        for (const to of data.result_emails) {
+        for (const to of recipientList) {
           console.log(`[EMAIL] results → ${to}`);
           await transporter.sendMail({
             from: `"QA Assessment" <${GMAIL_USER}>`,

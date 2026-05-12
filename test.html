@@ -177,7 +177,6 @@ code{background:var(--surface3);border:1px solid var(--border2);border-radius:5p
     position: relative;
 }
 </style>
-<base target="_blank">
 </head>
 <body>
 <div class="grid-bg"></div>
@@ -190,8 +189,7 @@ window.addEventListener("drop", function(e) { e.preventDefault(); }, false);
 
 // CONFIG
 const CFG = {
-  DEFAULT_ADMIN_PASSWORD: "QAAdmin2024",
-  BASE_URL: localStorage.getItem('qa_base_url') || window.location.origin || ""
+  DEFAULT_ADMIN_PASSWORD: "QAAdmin2024"
 };
 
 function getAdminPass() { return localStorage.getItem('qa_admin_pass') || CFG.DEFAULT_ADMIN_PASSWORD; }
@@ -296,8 +294,6 @@ function removeResume(e, candidateIndex) {
   render();
 }
 
-function ejsOk(){ return true; }
-
 async function sendCandidateEmail(c){
   try{
     const resp = await fetch('/send-email', {
@@ -315,12 +311,24 @@ async function sendCandidateEmail(c){
 }
 
 async function sendResultsEmails(c, sd){
-  if(!S.resultEmails.length) return false;
+  // Fetch result emails from server — works on any device, not just admin's browser
+  let resultEmails = S.resultEmails;
+  try {
+    const cfgResp = await fetch('/config');
+    if (cfgResp.ok) {
+      const cfgData = await cfgResp.json();
+      if (cfgData.resultEmails && cfgData.resultEmails.length) {
+        resultEmails = cfgData.resultEmails;
+      }
+    }
+  } catch(e) { console.warn('Could not fetch config from server, using local list:', e.message); }
+
+  if(!resultEmails.length) return false;
   try{
     const resp = await fetch('/send-email', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ type:'results', data:{
-        result_emails: S.resultEmails,
+        result_emails: resultEmails,
         candidate_name: c.name,
         candidate_email: c.email,
         difficulty: DIFF[c.difficulty]?.label||c.difficulty,
@@ -402,6 +410,7 @@ async function generate(){
 
   try{
     let allGeneratedQs = [];
+    let lastInviteSuccess = false;
 
     for (let i = 0; i < candidates.length; i++) {
         const c = candidates[i];
@@ -474,13 +483,8 @@ async function generate(){
         const expires=Date.now()+3*24*60*60*1000;
         const cid = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
 
-        // FIX: Use configured BASE_URL (Railway URL) instead of local IP
-        const baseUrl = (CFG.BASE_URL || window.location.origin || '').replace(/\/$/, '');
-        if (!baseUrl) {
-          alert('⚠️ No Base URL configured. Go to ⚙️ Settings and set your Railway URL first.\n\nExample: https://qa-platform-production-2d55.up.railway.app');
-          set({generating: false, genStep: 'Error: Base URL not configured', genPct: 0});
-          return;
-        }
+        // Always use the server's own origin — works correctly on Railway for all networks
+        const baseUrl = window.location.origin.replace(/\/$/, '');
         const link = baseUrl + '/?test=' + cid;
 
         const candData = {
@@ -499,13 +503,13 @@ async function generate(){
 
         upd(`Sending invite to ${c.name}…`, basePct + ((nextPct-basePct)*0.95));
 
-        save(); 
+        save();
 
-        if (ejsOk()) {
-            const mailSuccess = await sendCandidateEmail(candData);
-            if (!mailSuccess) {
-                console.error(`Failed to send invite to ${c.email}`);
-            }
+        lastInviteSuccess = false; // reset per candidate
+        const mailSuccess = await sendCandidateEmail(candData);
+        lastInviteSuccess = mailSuccess;
+        if (!mailSuccess) {
+          console.error(`Failed to send invite to ${c.email}`);
         }
 
         if (i < candidates.length - 1) {
@@ -515,8 +519,8 @@ async function generate(){
     }
 
     set({
-        generating: false, genStep: 'Done', genPct: 100, questions: allGeneratedQs, 
-        adminTab: 'generated', mailStatus: ejsOk() ? 'sent' : 'not_configured',
+        generating: false, genStep: 'Done', genPct: 100, questions: allGeneratedQs,
+        adminTab: 'generated', mailStatus: lastInviteSuccess ? 'sent' : 'not_configured',
         form: {...S.form, candidates: [{name:'', email:'', difficulty: 'knowledgeable', resumeText: '', resumeFileName: ''}]}
     });
   } catch(e) { 
@@ -1002,32 +1006,6 @@ function buildSettings(){
     ),
 
     h('div',{className:'card'},
-      h('div',{className:'card-title'},'🔗 Test Link Base URL'),
-      h('p',{style:{fontSize:13,color:'var(--text2)',marginBottom:12,lineHeight:1.6}},
-        'Set your Railway deployment URL so candidate links work from anywhere. ',
-        'This must match your Railway domain exactly. ',
-        h('strong',{style:{color:'var(--warn)'}},'⚠️ Candidates on other networks will NOT be able to open links using a local IP.')
-      ),
-      h('div',{style:{display:'flex',gap:8}},
-        h('input',{type:'text',id:'base-url-input',placeholder:'https://qa-platform-production-2d55.up.railway.app',
-          value: CFG.BASE_URL || '',
-          onInput: e => { CFG.BASE_URL = e.target.value.trim(); }
-        }),
-        h('button',{className:'btn btn-primary',style:{flexShrink:0},onClick:()=>{
-          const val = (document.getElementById('base-url-input')?.value||'').trim();
-          CFG.BASE_URL = val;
-          localStorage.setItem('qa_base_url', val);
-          alert(val ? '✅ Base URL saved: ' + val : '✅ Base URL cleared. Will use current origin.');
-        }},'Save')
-      ),
-      !CFG.BASE_URL ? h('div',{className:'alert alert-warn',style:{marginTop:12}},
-        '⚠️ No Base URL set. Links will use the current browser origin. If you are on localhost or a local IP, candidates on other networks will NOT be able to open the link. Set your Railway URL above.'
-      ) : h('div',{className:'alert alert-success',style:{marginTop:12}},
-        '✅ Links will use: ' + CFG.BASE_URL.replace(/\?.*$/,'')
-      )
-    ),
-
-    h('div',{className:'card'},
       h('div',{className:'card-title'},'📊 Marking Scheme'),
       h('div',{className:'info-row'},h('span',{className:'info-label'},'Correct answer'),h('span',{className:'info-val',style:{color:'var(--success)'}},'+4 marks')),
       h('div',{className:'info-row'},h('span',{className:'info-label'},'Wrong answer'),h('span',{className:'info-val',style:{color:'var(--danger)'}},'-1 mark')),
@@ -1059,9 +1037,18 @@ function addEmail(){
   const err = validateEmail(v);
   if(err) return alert(err);
   if(S.resultEmails.includes(v)) return alert('This email is already in the list.');
-  S.resultEmails.push(v); S.newEmailInput=''; save(); render();
+  S.resultEmails.push(v); S.newEmailInput=''; save();
+  syncResultEmailsToServer();
+  render();
 }
-function removeEmail(em){ S.resultEmails=S.resultEmails.filter(e=>e!==em); save(); render(); }
+function removeEmail(em){ S.resultEmails=S.resultEmails.filter(e=>e!==em); save(); syncResultEmailsToServer(); render(); }
+
+function syncResultEmailsToServer(){
+  fetch('/config', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ resultEmails: S.resultEmails })
+  }).catch(e => console.warn('Could not sync emails to server:', e.message));
+}
 
 function buildCandidate(){
   const qs=S.activeTest?.questions||[];
@@ -1206,6 +1193,14 @@ function buildMsg(icon,title,msg){
 
 const DEMO_QAP=`Quality Assurance Plan v3.0 — ISO 9001:2015\n\n1. Document Control & Records Management\n   - Revision control per Clause 7.5; Master Document Register (MDR)\n2. Non-Conformance Reporting (NCR)\n   - Initiation within 24h; Dispositions: rework, repair, use-as-is (concession), scrap\n3. Root Cause Analysis: 5-Why, Fishbone, FTA for critical failures\n4. CAPA: 8D process; effectiveness review at 30/60/90 days\n5. Inspection & Test Plans (ITP): IMI, in-process, FAT sign-off\n6. SPC: Xbar-R, P-chart, C-chart; Cpk ≥ 1.33; OCAP\n7. MSA / Gauge R&R: GRR < 10% preferred, <30% marginal; bias, linearity, stability\n8. Supplier Quality: ASL, annual critical audits, FAI per AS9102, PPAP\n9. Customer Complaints: 8D within 10 days; containment within 24h\n10. KPIs: PPM, FPY, COPQ, OTD, Customer Return Rate`;
 const DEMO_RESUME=`JOHN SMITH — Senior QA Engineer\nBosch India 2019–2024: IATF 16949 implementation, PPAP for 12 launches, PPM 450→68 using SPC, MSA/GR&R on 25+ gauges, 8D for OEM complaints\nTata Motors 2015–2019: Incoming inspection, CMM (ZEISS CONTURA), NCR/CAPA in SAP QM, supplier audits\nCertifications: CSSGB (ASQ 2021), IATF 16949 Auditor (TÜV 2020), AS9100D\nSkills: APQP, PPAP, DFMEA/PFMEA, MSA, SPC; Minitab 21, SAP QM; CMM operation\nIndustries: Automotive, Aerospace fasteners; B.E. Mechanical, Pune Univ 2015`;
+
+// On load: sync any locally-saved result emails up to the server
+if (S.resultEmails.length) {
+  fetch('/config', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ resultEmails: S.resultEmails })
+  }).catch(()=>{});
+}
 
 checkURL().then(handled => { if(!handled) render(); });
 </script>
