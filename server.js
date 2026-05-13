@@ -1,7 +1,7 @@
 /**
  * server.js — QA Assessment Platform
  * Deploy to Railway. Set these environment variables in Railway → Variables:
- *   ANTHROPIC_API_KEY  — from console.anthropic.com
+ *   GEMINI_API_KEY     — from aistudio.google.com/app/apikey
  *   GMAIL_USER         — your Gmail address e.g. yourname@gmail.com
  *   GMAIL_PASS         — Gmail App Password (NOT your login password)
  *                        Get it: Google Account → Security → 2FA → App Passwords
@@ -14,7 +14,7 @@ const path       = require("path");
 const nodemailer = require("nodemailer");
 
 const PORT      = process.env.PORT || 3001;
-const API_KEY   = process.env.ANTHROPIC_API_KEY || "";
+const API_KEY   = process.env.GEMINI_API_KEY || "";
 const GMAIL_USER = process.env.GMAIL_USER || "";
 const GMAIL_PASS = process.env.GMAIL_PASS || "";
 const HTML_FILE = path.join(__dirname, "test.html");
@@ -25,7 +25,7 @@ const STORE = {};
 // In-memory config store (result emails saved by admin, used when candidates submit)
 const CONFIG = { resultEmails: [] };
 
-if (!API_KEY)   console.warn("WARNING: ANTHROPIC_API_KEY not set. Add it in Railway → Variables.");
+if (!API_KEY)   console.warn("WARNING: GEMINI_API_KEY not set. Add it in Railway → Variables.");
 if (!GMAIL_USER || !GMAIL_PASS) console.warn("WARNING: GMAIL_USER or GMAIL_PASS not set. Emails will not be sent.");
 
 function getTransporter() {
@@ -305,40 +305,61 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // ── Proxy to Anthropic API ──────────────────────────────────────────────────
+  // ── Proxy to Gemini API ─────────────────────────────────────────────────────
   if (req.method === "POST" && pathname === "/api") {
     if (!API_KEY) {
       res.writeHead(503, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: { message: "ANTHROPIC_API_KEY not set. Add it in Railway → Variables." } }));
+      res.end(JSON.stringify({ error: { message: "GEMINI_API_KEY not set. Add it in Railway → Variables." } }));
       return;
     }
     try {
-      const payload = await readBody(req);
+      const body = JSON.parse(await readBody(req));
+
+      // Convert Anthropic-style request → Gemini format
+      const userMessage = body.messages?.[0]?.content || "";
+      const geminiPayload = JSON.stringify({
+        contents: [{ parts: [{ text: userMessage }] }],
+        generationConfig: { maxOutputTokens: body.max_tokens || 8000, temperature: 0.7 }
+      });
+
+      const geminiPath = `/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
       const options = {
-        hostname: "api.anthropic.com",
-        path: "/v1/messages",
+        hostname: "generativelanguage.googleapis.com",
+        path: geminiPath,
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Content-Length": Buffer.byteLength(payload),
-          "x-api-key": API_KEY,
-          "anthropic-version": "2023-06-01"
+          "Content-Length": Buffer.byteLength(geminiPayload)
         }
       };
+
       const proxyReq = https.request(options, proxyRes => {
         let data = "";
         proxyRes.on("data", chunk => { data += chunk; });
         proxyRes.on("end", () => {
-          console.log(`[API] ${proxyRes.statusCode}`);
-          res.writeHead(proxyRes.statusCode, { "Content-Type": "application/json" });
-          res.end(data);
+          console.log(`[GEMINI API] ${proxyRes.statusCode}`);
+          try {
+            const geminiResp = JSON.parse(data);
+            if (proxyRes.statusCode !== 200) {
+              res.writeHead(proxyRes.statusCode, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: { message: geminiResp.error?.message || "Gemini API error" } }));
+              return;
+            }
+            // Convert Gemini response → Anthropic-style so frontend works unchanged
+            const text = geminiResp.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            const converted = { content: [{ type: "text", text }] };
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(converted));
+          } catch(e) {
+            res.writeHead(502); res.end(JSON.stringify({ error: "Failed to parse Gemini response" }));
+          }
         });
       });
       proxyReq.on("error", err => {
-        console.error("Proxy error:", err.message);
+        console.error("Gemini proxy error:", err.message);
         res.writeHead(502); res.end(JSON.stringify({ error: err.message }));
       });
-      proxyReq.write(payload);
+      proxyReq.write(geminiPayload);
       proxyReq.end();
     } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: e.message })); }
     return;
