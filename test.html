@@ -220,7 +220,7 @@ let S = {
   form:{candidates:[{name:'', email:'', difficulty:'knowledgeable', resumeText:'', resumeFileName:''}], qapText:'', qapFileName:''},
   questions:[], answers:{}, submitted:false, elapsed:0,
   generating:false, genStep:'', genPct:0,
-  mailStatus:'',
+  mailStatus:'', mailError:'',
   reviewMode:false,
   adminPassInput:'', passErr:'',
   newEmailInput:'',
@@ -306,8 +306,10 @@ async function sendCandidateEmail(c){
         difficulty: DIFF[c.difficulty]?.label||c.difficulty
       }})
     });
-    return resp.ok;
-  } catch(e){ console.error('sendCandidateEmail error:', e); return false; }
+    const json = await resp.json();
+    if(!resp.ok) return { ok: false, error: json.error || 'Unknown server error' };
+    return { ok: true };
+  } catch(e){ return { ok: false, error: e.message }; }
 }
 
 async function sendResultsEmails(c, sd){
@@ -506,10 +508,11 @@ async function generate(){
         save();
 
         lastInviteSuccess = false; // reset per candidate
-        const mailSuccess = await sendCandidateEmail(candData);
-        lastInviteSuccess = mailSuccess;
-        if (!mailSuccess) {
-          console.error(`Failed to send invite to ${c.email}`);
+        const mailResult = await sendCandidateEmail(candData);
+        lastInviteSuccess = mailResult.ok;
+        if (!mailResult.ok) {
+          console.error(`Failed to send invite to ${c.email}:`, mailResult.error);
+          S.mailError = mailResult.error;
         }
 
         if (i < candidates.length - 1) {
@@ -785,7 +788,11 @@ function buildGenerated(){
 
   return h('div',{},
     S.mailStatus==='sent' ? h('div',{className:'alert alert-success'},'📧 Invites emailed to candidates successfully!') : null,
-    S.mailStatus==='not_configured' ? h('div',{className:'alert alert-info'},'📋 Email sending skipped. Check Railway environment variables (GMAIL_USER, GMAIL_PASS).') : null,
+    S.mailStatus==='not_configured' ? h('div',{className:'alert alert-danger'},
+      h('strong',{},'📧 Email failed to send.'),
+      S.mailError ? h('div',{style:{marginTop:6,fontSize:12,fontFamily:'var(--mono)',wordBreak:'break-all'}}, '⚠️ SMTP Error: '+S.mailError) : null,
+      h('div',{style:{marginTop:8,fontSize:12}},'Go to ⚙️ Settings → Test Email to diagnose.')
+    ) : null,
     h('p',{style:{fontSize:13,color:'var(--text2)',marginBottom:16}},'All generated tests are saved below for their lifetime. You can view, copy links, or edit their names.'),
     ...S.candidates.map((c, idx) => {
         return h('div',{className:'card', style:{padding: '16px 20px', marginBottom: '12px'}},
@@ -1025,8 +1032,49 @@ function buildSettings(){
       h('div',{className:'info-row'},h('span',{className:'info-label'},'Server-side email'),
         h('span',{className:'badge badge-green'},'✓ Nodemailer + Gmail')
       ),
+      h('div',{style:{marginTop:16,display:'flex',gap:10,flexWrap:'wrap'}},
+        h('button',{className:'btn btn-primary',id:'testEmailBtn',onClick:async ()=>{
+          const btn = document.getElementById('testEmailBtn');
+          const out = document.getElementById('testEmailOut');
+          btn.disabled = true; btn.textContent = '⏳ Sending…';
+          out.textContent = ''; out.style.display = 'none';
+          try {
+            const r = await fetch('/test-email');
+            const j = await r.json();
+            if(r.ok){
+              out.textContent = '✅ ' + j.message + ' — check your inbox!';
+              out.style.background = 'rgba(16,185,129,.12)';
+              out.style.color = '#34d399';
+              out.style.border = '1px solid rgba(16,185,129,.25)';
+            } else {
+              out.textContent = '❌ SMTP Error: ' + j.error + (j.hint ? '\n💡 Hint: '+j.hint : '');
+              out.style.background = 'rgba(239,68,68,.1)';
+              out.style.color = '#f87171';
+              out.style.border = '1px solid rgba(239,68,68,.25)';
+            }
+            out.style.display = 'block';
+          } catch(e){
+            out.textContent = '❌ Fetch error: ' + e.message;
+            out.style.display = 'block';
+          }
+          btn.disabled = false; btn.textContent = '📧 Send Test Email';
+        }},'📧 Send Test Email'),
+        h('button',{className:'btn btn-outline',onClick:async ()=>{
+          const out = document.getElementById('testEmailOut');
+          try{
+            const r = await fetch('/env-check');
+            const j = await r.json();
+            out.textContent = JSON.stringify(j, null, 2);
+            out.style.background = 'rgba(59,130,246,.08)';
+            out.style.color = '#93c5fd';
+            out.style.border = '1px solid rgba(59,130,246,.2)';
+            out.style.display = 'block';
+          } catch(e){ alert('Could not reach /env-check: '+e.message); }
+        }},'🔍 Check Env Variables')
+      ),
+      h('pre',{id:'testEmailOut',style:{display:'none',marginTop:12,padding:'12px 14px',borderRadius:8,fontSize:12,fontFamily:'var(--mono)',lineHeight:1.6,whiteSpace:'pre-wrap',wordBreak:'break-all'}}),
       h('p',{style:{fontSize:12,color:'var(--text3)',marginTop:12}},
-        'To verify email is working: generate a test and check Railway Logs for ',h('code',{},'[EMAIL] invite SENT'),' messages.'
+        '💡 Common fix: Gmail App Password must have NO spaces. Google shows it as ',h('code',{},'xxxx xxxx xxxx xxxx'),' — paste as ',h('code',{},'xxxxxxxxxxxxxxxx'),'.'
       )
     )
   );
