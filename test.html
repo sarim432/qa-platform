@@ -485,8 +485,16 @@ async function generate(){
         const expires=Date.now()+3*24*60*60*1000;
         const cid = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
 
-        // Always use the server's own origin — works correctly on Railway for all networks
-        const baseUrl = window.location.origin.replace(/\/$/, '');
+        // Always get the public URL from the server — works even when admin opens on localhost
+        let baseUrl = window.location.origin.replace(/\/$/, '');
+        try {
+          const pubResp = await fetch('/public-url');
+          if (pubResp.ok) {
+            const pubData = await pubResp.json();
+            if (pubData.url) baseUrl = pubData.url;
+          }
+        } catch(e) { console.warn('Could not fetch public URL, using origin:', e.message); }
+
         const link = baseUrl + '/?test=' + cid;
 
         const candData = {
