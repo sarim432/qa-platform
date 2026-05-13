@@ -25,14 +25,43 @@ const STORE = {};
 // In-memory config store (result emails saved by admin, used when candidates submit)
 const CONFIG = { resultEmails: [] };
 
+// ── Request Rate Tracker ─────────────────────────────────────────────────────
+const RATE = { count: 0, windowStart: Date.now() };
+
+function trackRequest() {
+  const now = Date.now();
+  const elapsed = now - RATE.windowStart;
+  RATE.count++;
+
+  if (elapsed >= 60000) {
+    // Log RPM at the end of each 60s window and reset
+    console.log(`[RATE] ${RATE.count} requests in last ${Math.round(elapsed/1000)}s → ~${Math.round(RATE.count / (elapsed/60000))} RPM`);
+    RATE.count = 1;
+    RATE.windowStart = now;
+  } else {
+    // Live log every request with running count
+    const rpm = Math.round(RATE.count / (elapsed / 60000));
+    console.log(`[RATE] Request #${RATE.count} in window | ${Math.round(elapsed/1000)}s elapsed | ~${isFinite(rpm) ? rpm : RATE.count} RPM`);
+  }
+}
+
 if (!API_KEY)   console.warn("WARNING: GROQ_API_KEY not set. Add it in Railway → Variables.");
-if (!GMAIL_USER || !GMAIL_PASS) console.warn("WARNING: GMAIL_USER or GMAIL_PASS not set. Emails will not be sent.");
+if (!GMAIL_USER) console.warn("WARNING: GMAIL_USER not set.");
+if (!GMAIL_PASS) console.warn("WARNING: GMAIL_PASS not set.");
+if (GMAIL_USER && GMAIL_PASS) console.log(`✅ Email configured for: ${GMAIL_USER}`);
 
 function getTransporter() {
   if (!GMAIL_USER || !GMAIL_PASS) return null;
   return nodemailer.createTransport({
-    service: "gmail",
-    auth: { user: GMAIL_USER, pass: GMAIL_PASS }
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      type: "login",
+      user: GMAIL_USER,
+      pass: GMAIL_PASS.replace(/\s+/g, "") // strip spaces — Google shows passwords with spaces
+    },
+    tls: { rejectUnauthorized: false }
   });
 }
 
@@ -168,6 +197,46 @@ const server = http.createServer(async (req, res) => {
   // ── Health check ────────────────────────────────────────────────────────────
   if (req.method === "GET" && pathname === "/health") {
     res.writeHead(200); res.end("ok"); return;
+  }
+
+  // ── Env check — shows which variables Railway has loaded ───────────────────
+  if (req.method === "GET" && pathname === "/env-check") {
+    const status = {
+      GROQ_API_KEY:  API_KEY   ? `✅ SET (${API_KEY.length} chars)`   : "❌ NOT SET",
+      GMAIL_USER:    GMAIL_USER ? `✅ SET → ${GMAIL_USER}`             : "❌ NOT SET",
+      GMAIL_PASS:    GMAIL_PASS ? `✅ SET (${GMAIL_PASS.replace(/\s+/g,"").length} chars, spaces stripped)` : "❌ NOT SET",
+      email_ready:   (GMAIL_USER && GMAIL_PASS) ? "✅ YES" : "❌ NO — add both vars then REDEPLOY"
+    };
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(status, null, 2));
+    return;
+  }
+
+  // ── Test email — hit this to send a test email to yourself ─────────────────
+  if (req.method === "GET" && pathname === "/test-email") {
+    const transporter = getTransporter();
+    if (!transporter) {
+      res.writeHead(503, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "GMAIL_USER or GMAIL_PASS not set in Railway Variables." }));
+      return;
+    }
+    try {
+      await transporter.verify();
+      await transporter.sendMail({
+        from: `"QA Assessment" <${GMAIL_USER}>`,
+        to: GMAIL_USER,
+        subject: "✅ QA Platform — Email Test",
+        html: `<p>If you received this, your Gmail App Password is working correctly on Railway.</p><p>Sent at: ${new Date().toISOString()}</p>`
+      });
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: true, message: `Test email sent to ${GMAIL_USER}` }));
+      console.log(`[TEST EMAIL] Sent to ${GMAIL_USER}`);
+    } catch(e) {
+      console.error("[TEST EMAIL ERROR]", e.message);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: e.message, hint: "Check App Password has no spaces and 2FA is enabled on your Google account." }));
+    }
+    return;
   }
 
   // ── Serve HTML ──────────────────────────────────────────────────────────────
@@ -313,6 +382,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
     try {
+      trackRequest();
       const body = JSON.parse(await readBody(req));
 
       // Groq uses OpenAI-compatible format
