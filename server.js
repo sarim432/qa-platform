@@ -17,6 +17,7 @@ const API_KEY          = process.env.GROQ_API_KEY    || "";
 const BREVO_KEY        = process.env.BREVO_API_KEY   || "";
 const BREVO_FROM_EMAIL = process.env.BREVO_FROM_EMAIL|| "";
 const BREVO_FROM_NAME  = process.env.BREVO_FROM_NAME || "QA Assessment";
+const PUBLIC_URL       = (process.env.PUBLIC_URL     || "").replace(/\/$/, "");
 const HTML_FILE        = path.join(__dirname, "test.html");
 
 const STORE  = {};
@@ -38,6 +39,8 @@ function trackRequest() {
 if (!API_KEY)          console.warn("WARNING: GROQ_API_KEY not set.");
 if (!BREVO_KEY)        console.warn("WARNING: BREVO_API_KEY not set — emails will not send.");
 if (!BREVO_FROM_EMAIL) console.warn("WARNING: BREVO_FROM_EMAIL not set.");
+if (!PUBLIC_URL)       console.warn("WARNING: PUBLIC_URL not set — candidate links may use localhost. Set it to your Railway URL.");
+else                   console.log(`✅ Public URL: ${PUBLIC_URL}`);
 if (BREVO_KEY && BREVO_FROM_EMAIL) console.log(`✅ Brevo ready. Sending from: ${BREVO_FROM_EMAIL}`);
 
 // ── Brevo HTTP helper (port 443 — never blocked by Railway) ──────────────────
@@ -164,6 +167,13 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200); res.end("ok"); return;
   }
 
+  // ── Public URL — frontend uses this for candidate link generation ───────────
+  if (req.method === "GET" && pathname === "/public-url") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ url: PUBLIC_URL || null }));
+    return;
+  }
+
   if (req.method === "GET" && pathname === "/env-check") {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({
@@ -171,6 +181,7 @@ const server = http.createServer(async (req, res) => {
       BREVO_API_KEY:     BREVO_KEY        ? `✅ SET (${BREVO_KEY.length} chars)`  : "❌ NOT SET",
       BREVO_FROM_EMAIL:  BREVO_FROM_EMAIL ? `✅ SET → ${BREVO_FROM_EMAIL}`        : "❌ NOT SET",
       BREVO_FROM_NAME:   BREVO_FROM_NAME,
+      PUBLIC_URL:        PUBLIC_URL       ? `✅ SET → ${PUBLIC_URL}`              : "❌ NOT SET — candidate links will use browser origin",
       email_ready:       (BREVO_KEY && BREVO_FROM_EMAIL) ? "✅ YES" : "❌ NO — set BREVO_API_KEY and BREVO_FROM_EMAIL then REDEPLOY"
     }, null, 2));
     return;
