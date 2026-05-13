@@ -366,7 +366,7 @@ async function fetchWithRetry(prompt, maxRetries = 3) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-5",
+          model: "gemini-2.0-flash",
           max_tokens: 8000,
           messages: [{ role: "user", content: prompt }]
         })
