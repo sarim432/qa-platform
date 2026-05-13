@@ -359,14 +359,14 @@ function calcScore(qs,answers){
 }
 
 async function fetchWithRetry(prompt, maxRetries = 3) {
-  let delay = 5000;
+  let delay = 3000;
   for (let i = 0; i < maxRetries; i++) {
     try {
       const response = await fetch("/api", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "gemini-2.0-flash",
+          model: "llama-3.3-70b-versatile",
           max_tokens: 8000,
           messages: [{ role: "user", content: prompt }]
         })
@@ -380,7 +380,7 @@ async function fetchWithRetry(prompt, maxRetries = 3) {
       return data;
     } catch (e) {
       if (e.message === "429") {
-        console.warn(`API Limit Hit. Pausing for ${delay/1000}s... (Attempt ${i+1}/${maxRetries})`);
+        console.warn(`Rate limit hit. Waiting ${delay/1000}s… (Attempt ${i+1}/${maxRetries})`);
         await new Promise(r => setTimeout(r, delay));
         delay *= 2;
       } else {
@@ -388,7 +388,7 @@ async function fetchWithRetry(prompt, maxRetries = 3) {
       }
     }
   }
-  throw new Error("API limit reached. Please wait a moment and try again.");
+  throw new Error("Rate limit reached after retries. Please wait 30 seconds and try again.");
 }
 
 async function generate(){
