@@ -1,7 +1,7 @@
 /**
  * server.js — QA Assessment Platform
  * Deploy to Railway. Set these environment variables in Railway → Variables:
- *   GEMINI_API_KEY     — from aistudio.google.com/app/apikey
+ *   GROQ_API_KEY       — from console.groq.com (free tier: 30 RPM, 6000 RPD)
  *   GMAIL_USER         — your Gmail address e.g. yourname@gmail.com
  *   GMAIL_PASS         — Gmail App Password (NOT your login password)
  *                        Get it: Google Account → Security → 2FA → App Passwords
@@ -14,7 +14,7 @@ const path       = require("path");
 const nodemailer = require("nodemailer");
 
 const PORT      = process.env.PORT || 3001;
-const API_KEY   = process.env.GEMINI_API_KEY || "";
+const API_KEY   = process.env.GROQ_API_KEY || "";
 const GMAIL_USER = process.env.GMAIL_USER || "";
 const GMAIL_PASS = process.env.GMAIL_PASS || "";
 const HTML_FILE = path.join(__dirname, "test.html");
@@ -25,7 +25,7 @@ const STORE = {};
 // In-memory config store (result emails saved by admin, used when candidates submit)
 const CONFIG = { resultEmails: [] };
 
-if (!API_KEY)   console.warn("WARNING: GEMINI_API_KEY not set. Add it in Railway → Variables.");
+if (!API_KEY)   console.warn("WARNING: GROQ_API_KEY not set. Add it in Railway → Variables.");
 if (!GMAIL_USER || !GMAIL_PASS) console.warn("WARNING: GMAIL_USER or GMAIL_PASS not set. Emails will not be sent.");
 
 function getTransporter() {
@@ -305,31 +305,32 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // ── Proxy to Gemini API ─────────────────────────────────────────────────────
+  // ── Proxy to Groq API (OpenAI-compatible, free tier) ───────────────────────
   if (req.method === "POST" && pathname === "/api") {
     if (!API_KEY) {
       res.writeHead(503, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: { message: "GEMINI_API_KEY not set. Add it in Railway → Variables." } }));
+      res.end(JSON.stringify({ error: { message: "GROQ_API_KEY not set. Add it in Railway → Variables." } }));
       return;
     }
     try {
       const body = JSON.parse(await readBody(req));
 
-      // Convert Anthropic-style request → Gemini format
-      const userMessage = body.messages?.[0]?.content || "";
-      const geminiPayload = JSON.stringify({
-        contents: [{ parts: [{ text: userMessage }] }],
-        generationConfig: { maxOutputTokens: body.max_tokens || 8000, temperature: 0.7 }
+      // Groq uses OpenAI-compatible format
+      const groqPayload = JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: body.messages || [],
+        max_tokens: body.max_tokens || 8000,
+        temperature: 0.7
       });
 
-      const geminiPath = `/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
       const options = {
-        hostname: "generativelanguage.googleapis.com",
-        path: geminiPath,
+        hostname: "api.groq.com",
+        path: "/openai/v1/chat/completions",
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Content-Length": Buffer.byteLength(geminiPayload)
+          "Content-Length": Buffer.byteLength(groqPayload),
+          "Authorization": `Bearer ${API_KEY}`
         }
       };
 
@@ -337,29 +338,29 @@ const server = http.createServer(async (req, res) => {
         let data = "";
         proxyRes.on("data", chunk => { data += chunk; });
         proxyRes.on("end", () => {
-          console.log(`[GEMINI API] ${proxyRes.statusCode}`);
+          console.log(`[GROQ API] ${proxyRes.statusCode}`);
           try {
-            const geminiResp = JSON.parse(data);
+            const groqResp = JSON.parse(data);
             if (proxyRes.statusCode !== 200) {
               res.writeHead(proxyRes.statusCode, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({ error: { message: geminiResp.error?.message || "Gemini API error" } }));
+              res.end(JSON.stringify({ error: { message: groqResp.error?.message || "Groq API error" } }));
               return;
             }
-            // Convert Gemini response → Anthropic-style so frontend works unchanged
-            const text = geminiResp.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            // Convert Groq/OpenAI response → Anthropic-style so frontend works unchanged
+            const text = groqResp.choices?.[0]?.message?.content || "";
             const converted = { content: [{ type: "text", text }] };
             res.writeHead(200, { "Content-Type": "application/json" });
             res.end(JSON.stringify(converted));
           } catch(e) {
-            res.writeHead(502); res.end(JSON.stringify({ error: "Failed to parse Gemini response" }));
+            res.writeHead(502); res.end(JSON.stringify({ error: "Failed to parse Groq response" }));
           }
         });
       });
       proxyReq.on("error", err => {
-        console.error("Gemini proxy error:", err.message);
+        console.error("Groq proxy error:", err.message);
         res.writeHead(502); res.end(JSON.stringify({ error: err.message }));
       });
-      proxyReq.write(geminiPayload);
+      proxyReq.write(groqPayload);
       proxyReq.end();
     } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: e.message })); }
     return;
