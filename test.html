@@ -1025,12 +1025,16 @@ function buildSettings(){
     h('div',{className:'card'},
       h('div',{className:'card-title'},'⚙️ Email Server Status'),
       h('p',{style:{fontSize:13,color:'var(--text2)',marginBottom:12,lineHeight:1.6}},
-        'Emails are sent server-side via Nodemailer + Gmail App Password. No browser configuration needed.',
+        'Emails are sent via ',h('strong',{},'Resend API'),' over HTTPS — no SMTP, no port blocks on Railway.',
         h('br'),
-        'Set ',h('code',{},'GMAIL_USER'),' and ',h('code',{},'GMAIL_PASS'),' in Railway → Variables to enable email sending.'
+        'Set ',h('code',{},`RESEND_API_KEY`),' in Railway → Variables. Get a free key at ',
+        h('a',{href:'https://resend.com',target:'_blank',style:{color:'var(--accent)'}},'resend.com'),'.'
       ),
-      h('div',{className:'info-row'},h('span',{className:'info-label'},'Server-side email'),
-        h('span',{className:'badge badge-green'},'✓ Nodemailer + Gmail')
+      h('div',{className:'info-row'},h('span',{className:'info-label'},'Email provider'),
+        h('span',{className:'badge badge-green'},'✓ Resend API (HTTPS)')
+      ),
+      h('div',{className:'info-row'},h('span',{className:'info-label'},'Free tier'),
+        h('span',{className:'info-val'},'3,000 emails / month')
       ),
       h('div',{style:{marginTop:16,display:'flex',gap:10,flexWrap:'wrap'}},
         h('button',{className:'btn btn-primary',id:'testEmailBtn',onClick:async ()=>{
@@ -1042,12 +1046,12 @@ function buildSettings(){
             const r = await fetch('/test-email');
             const j = await r.json();
             if(r.ok){
-              out.textContent = '✅ ' + j.message + ' — check your inbox!';
+              out.textContent = '✅ ' + j.message;
               out.style.background = 'rgba(16,185,129,.12)';
               out.style.color = '#34d399';
               out.style.border = '1px solid rgba(16,185,129,.25)';
             } else {
-              out.textContent = '❌ SMTP Error: ' + j.error + (j.hint ? '\n💡 Hint: '+j.hint : '');
+              out.textContent = '❌ Error: ' + j.error;
               out.style.background = 'rgba(239,68,68,.1)';
               out.style.color = '#f87171';
               out.style.border = '1px solid rgba(239,68,68,.25)';
@@ -1072,10 +1076,7 @@ function buildSettings(){
           } catch(e){ alert('Could not reach /env-check: '+e.message); }
         }},'🔍 Check Env Variables')
       ),
-      h('pre',{id:'testEmailOut',style:{display:'none',marginTop:12,padding:'12px 14px',borderRadius:8,fontSize:12,fontFamily:'var(--mono)',lineHeight:1.6,whiteSpace:'pre-wrap',wordBreak:'break-all'}}),
-      h('p',{style:{fontSize:12,color:'var(--text3)',marginTop:12}},
-        '💡 Common fix: Gmail App Password must have NO spaces. Google shows it as ',h('code',{},'xxxx xxxx xxxx xxxx'),' — paste as ',h('code',{},'xxxxxxxxxxxxxxxx'),'.'
-      )
+      h('pre',{id:'testEmailOut',style:{display:'none',marginTop:12,padding:'12px 14px',borderRadius:8,fontSize:12,fontFamily:'var(--mono)',lineHeight:1.6,whiteSpace:'pre-wrap',wordBreak:'break-all'}})
     )
   );
 }
