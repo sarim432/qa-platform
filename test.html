@@ -360,8 +360,10 @@ function calcScore(qs,answers){
   return {correct,wrong,skipped,marks,pct:Math.max(0,Math.round(marks/MAX_MARKS*100)),breakdown:lines.join('\n'),timeTaken:fmt(S.elapsed)};
 }
 
-async function fetchWithRetry(prompt, maxRetries = 3) {
-  let delay = 3000;
+async function fetchWithRetry(prompt, maxRetries = 4) {
+  // Groq free tier: tokens-per-minute limit needs 30-60s to reset
+  const DELAYS = [15000, 30000, 60000, 90000]; // 15s, 30s, 60s, 90s
+
   for (let i = 0; i < maxRetries; i++) {
     try {
       const response = await fetch("/api", {
@@ -382,15 +384,25 @@ async function fetchWithRetry(prompt, maxRetries = 3) {
       return data;
     } catch (e) {
       if (e.message === "429") {
-        console.warn(`Rate limit hit. Waiting ${delay/1000}s… (Attempt ${i+1}/${maxRetries})`);
-        await new Promise(r => setTimeout(r, delay));
-        delay *= 2;
+        if (i === maxRetries - 1) break; // out of retries
+        const waitMs = DELAYS[i] || 90000;
+        const waitSec = Math.ceil(waitMs / 1000);
+        console.warn(`[RATE LIMIT] Attempt ${i+1}/${maxRetries}. Waiting ${waitSec}s for Groq token limit to reset…`);
+
+        // Show live countdown in the UI
+        const endTime = Date.now() + waitMs;
+        while (Date.now() < endTime) {
+          const remaining = Math.ceil((endTime - Date.now()) / 1000);
+          const el = document.getElementById('gl');
+          if (el) el.textContent = `⏳ Groq rate limit hit — waiting ${remaining}s before retry (attempt ${i+2}/${maxRetries})…`;
+          await new Promise(r => setTimeout(r, 1000));
+        }
       } else {
         throw e;
       }
     }
   }
-  throw new Error("Rate limit reached after retries. Please wait 30 seconds and try again.");
+  throw new Error("Groq rate limit: token quota exhausted. Please wait 1–2 minutes and try again.");
 }
 
 async function generate(){
