@@ -317,8 +317,10 @@ const server = http.createServer(async (req, res) => {
           try {
             const r = JSON.parse(data);
             if (proxyRes.statusCode !== 200) {
+              const retryAfter = proxyRes.headers['retry-after'];
+              console.warn(`[GROQ] ${proxyRes.statusCode} — retry-after: ${retryAfter || 'not set'}`);
               res.writeHead(proxyRes.statusCode, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({ error: { message: r.error?.message || "Groq error" } }));
+              res.end(JSON.stringify({ error: { message: r.error?.message || `Groq error ${proxyRes.statusCode}`, retryAfter: retryAfter || null } }));
               return;
             }
             const text = r.choices?.[0]?.message?.content || "";
