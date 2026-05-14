@@ -13,12 +13,35 @@ const fs    = require("fs");
 const path  = require("path");
 
 const PORT             = process.env.PORT            || 3001;
-const API_KEY          = process.env.GROQ_API_KEY    || "";
 const BREVO_KEY        = process.env.BREVO_API_KEY   || "";
 const BREVO_FROM_EMAIL = process.env.BREVO_FROM_EMAIL|| "";
 const BREVO_FROM_NAME  = process.env.BREVO_FROM_NAME || "QA Assessment";
 const PUBLIC_URL       = (process.env.PUBLIC_URL     || "").replace(/\/$/, "");
 const HTML_FILE        = path.join(__dirname, "test.html");
+
+// ── Groq API key rotation ────────────────────────────────────────────────────
+// Add up to 5 keys in Railway/Render variables: GROQ_API_KEY_1, GROQ_API_KEY_2, etc.
+// The server rotates through them automatically — each key gets its own quota.
+const GROQ_KEYS = [
+  process.env.GROQ_API_KEY_1,
+  process.env.GROQ_API_KEY_2,
+  process.env.GROQ_API_KEY_3,
+  process.env.GROQ_API_KEY_4,
+  process.env.GROQ_API_KEY_5,
+].filter(Boolean); // remove any that aren't set
+
+// Fallback: also accept the old single GROQ_API_KEY variable
+if (process.env.GROQ_API_KEY && !GROQ_KEYS.includes(process.env.GROQ_API_KEY)) {
+  GROQ_KEYS.unshift(process.env.GROQ_API_KEY);
+}
+
+let groqKeyIndex = 0;
+function getNextGroqKey() {
+  if (!GROQ_KEYS.length) return null;
+  const key = GROQ_KEYS[groqKeyIndex % GROQ_KEYS.length];
+  groqKeyIndex++;
+  return key;
+}
 
 const STORE  = {};
 const CONFIG = { resultEmails: [] };
@@ -36,11 +59,12 @@ function trackRequest() {
   }
 }
 
-if (!API_KEY)          console.warn("WARNING: GROQ_API_KEY not set.");
-if (!BREVO_KEY)        console.warn("WARNING: BREVO_API_KEY not set — emails will not send.");
-if (!BREVO_FROM_EMAIL) console.warn("WARNING: BREVO_FROM_EMAIL not set.");
-if (!PUBLIC_URL)       console.warn("WARNING: PUBLIC_URL not set — candidate links may use localhost. Set it to your Railway URL.");
-else                   console.log(`✅ Public URL: ${PUBLIC_URL}`);
+if (!GROQ_KEYS.length)  console.warn("WARNING: No GROQ API keys set. Add GROQ_API_KEY_1, GROQ_API_KEY_2 etc. in Variables.");
+else                    console.log(`✅ Groq key pool: ${GROQ_KEYS.length} key(s) loaded. Rotation enabled.`);
+if (!BREVO_KEY)         console.warn("WARNING: BREVO_API_KEY not set — emails will not send.");
+if (!BREVO_FROM_EMAIL)  console.warn("WARNING: BREVO_FROM_EMAIL not set.");
+if (!PUBLIC_URL)        console.warn("WARNING: PUBLIC_URL not set — candidate links may use localhost.");
+else                    console.log(`✅ Public URL: ${PUBLIC_URL}`);
 if (BREVO_KEY && BREVO_FROM_EMAIL) console.log(`✅ Brevo ready. Sending from: ${BREVO_FROM_EMAIL}`);
 
 // ── Brevo HTTP helper (port 443 — never blocked by Railway) ──────────────────
@@ -177,7 +201,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && pathname === "/env-check") {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({
-      GROQ_API_KEY:      API_KEY          ? `✅ SET (${API_KEY.length} chars)`    : "❌ NOT SET",
+      GROQ_KEYS_LOADED:  GROQ_KEYS.length ? `✅ ${GROQ_KEYS.length} key(s) active` : "❌ NO KEYS SET",
       BREVO_API_KEY:     BREVO_KEY        ? `✅ SET (${BREVO_KEY.length} chars)`  : "❌ NOT SET",
       BREVO_FROM_EMAIL:  BREVO_FROM_EMAIL ? `✅ SET → ${BREVO_FROM_EMAIL}`        : "❌ NOT SET",
       BREVO_FROM_NAME:   BREVO_FROM_NAME,
@@ -287,9 +311,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "POST" && pathname === "/api") {
-    if (!API_KEY) {
+    if (!GROQ_KEYS.length) {
       res.writeHead(503, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: { message: "GROQ_API_KEY not set in Railway Variables." } }));
+      res.end(JSON.stringify({ error: { message: "No GROQ API keys set. Add GROQ_API_KEY_1 in Variables." } }));
       return;
     }
     try {
@@ -301,36 +325,61 @@ const server = http.createServer(async (req, res) => {
         max_tokens: body.max_tokens || 8000,
         temperature: 0.7
       });
-      const opts = {
-        hostname: "api.groq.com", path: "/openai/v1/chat/completions", method: "POST",
-        headers: {
-          "Content-Type":   "application/json",
-          "Content-Length": Buffer.byteLength(groqPayload),
-          "Authorization":  `Bearer ${API_KEY}`
-        }
-      };
-      const proxyReq = https.request(opts, proxyRes => {
-        let data = "";
-        proxyRes.on("data", chunk => { data += chunk; });
-        proxyRes.on("end", () => {
-          console.log(`[GROQ] ${proxyRes.statusCode}`);
-          try {
-            const r = JSON.parse(data);
-            if (proxyRes.statusCode !== 200) {
-              const retryAfter = proxyRes.headers['retry-after'];
-              console.warn(`[GROQ] ${proxyRes.statusCode} — retry-after: ${retryAfter || 'not set'}`);
-              res.writeHead(proxyRes.statusCode, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({ error: { message: r.error?.message || `Groq error ${proxyRes.statusCode}`, retryAfter: retryAfter || null } }));
-              return;
+
+      // Try each key in rotation — if one hits 429, immediately try the next
+      let lastError = null;
+      for (let attempt = 0; attempt < GROQ_KEYS.length; attempt++) {
+        const apiKey = getNextGroqKey();
+        console.log(`[GROQ] Using key #${(groqKeyIndex % GROQ_KEYS.length) + 1} of ${GROQ_KEYS.length}`);
+
+        const result = await new Promise((resolve) => {
+          const opts = {
+            hostname: "api.groq.com", path: "/openai/v1/chat/completions", method: "POST",
+            headers: {
+              "Content-Type":   "application/json",
+              "Content-Length": Buffer.byteLength(groqPayload),
+              "Authorization":  `Bearer ${apiKey}`
             }
-            const text = r.choices?.[0]?.message?.content || "";
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ content: [{ type: "text", text }] }));
-          } catch(e) { res.writeHead(502); res.end(JSON.stringify({ error: "Bad Groq response" })); }
+          };
+          const proxyReq = https.request(opts, proxyRes => {
+            let data = "";
+            proxyRes.on("data", chunk => { data += chunk; });
+            proxyRes.on("end", () => resolve({ status: proxyRes.statusCode, body: data, headers: proxyRes.headers }));
+          });
+          proxyReq.on("error", err => resolve({ status: 502, body: JSON.stringify({ error: err.message }), headers: {} }));
+          proxyReq.write(groqPayload); proxyReq.end();
         });
-      });
-      proxyReq.on("error", err => { res.writeHead(502); res.end(JSON.stringify({ error: err.message })); });
-      proxyReq.write(groqPayload); proxyReq.end();
+
+        console.log(`[GROQ] Key #${attempt + 1} → ${result.status}`);
+
+        if (result.status === 429) {
+          lastError = result;
+          console.warn(`[GROQ] Key #${attempt + 1} rate limited — trying next key…`);
+          continue; // try next key immediately
+        }
+
+        try {
+          const r = JSON.parse(result.body);
+          if (result.status !== 200) {
+            const retryAfter = result.headers['retry-after'];
+            res.writeHead(result.status, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: { message: r.error?.message || `Groq error ${result.status}`, retryAfter: retryAfter || null } }));
+            return;
+          }
+          const text = r.choices?.[0]?.message?.content || "";
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ content: [{ type: "text", text }] }));
+          return;
+        } catch(e) {
+          res.writeHead(502); res.end(JSON.stringify({ error: "Bad Groq response" }));
+          return;
+        }
+      }
+
+      // All keys rate limited
+      console.error("[GROQ] All keys rate limited.");
+      res.writeHead(429, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: { message: `All ${GROQ_KEYS.length} Groq API key(s) are rate limited. Please wait 1 minute and try again, or add more keys.` } }));
     } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: e.message })); }
     return;
   }
