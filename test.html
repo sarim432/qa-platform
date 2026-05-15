@@ -11,12 +11,12 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#080c14;--surface:#0f1520;--surface2:#161d2e;--surface3:#1e2840;
-  --border:#1f2d47;--border2:#2a3d5c;
-  --accent:#3b82f6;--aglow:rgba(59,130,246,.15);
-  --accent2:#10d9a0;--a2glow:rgba(16,217,160,.12);
+  --bg:#f5f7fa;--surface:#ffffff;--surface2:#f0f2f7;--surface3:#e4e8f2;
+  --border:#e2e8f0;--border2:#c8d3e8;
+  --accent:#4f46e5;--aglow:rgba(79,70,229,.1);
+  --accent2:#0ea5e9;--a2glow:rgba(14,165,233,.1);
   --warn:#f59e0b;--danger:#ef4444;--success:#10b981;
-  --text:#e2e8f4;--text2:#8fa3c4;--text3:#4a6080;
+  --text:#0f172a;--text2:#475569;--text3:#94a3b8;
   --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Syne',sans-serif;
 }
 html{scroll-behavior:smooth}
@@ -29,7 +29,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 .brand-mark{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
 .brand-name{font-family:var(--display);font-size:18px;font-weight:700;color:var(--text)}
 .brand-tag{font-size:11px;color:var(--text3);font-family:var(--mono)}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 28px;margin-bottom:18px; position:relative;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 28px;margin-bottom:18px;position:relative;box-shadow:0 1px 4px rgba(15,23,42,.06)}
 .card-title{font-family:var(--display);font-size:15px;font-weight:700;color:var(--text);margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap; justify-content: space-between;}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:600px){.form-row{grid-template-columns:1fr}}
@@ -61,18 +61,11 @@ select option{background:var(--surface2);color:var(--text)}
 .btn-loading{position:relative;color:transparent!important}
 .btn-loading::after{content:'';position:absolute;width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
 .badge{font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600;font-family:var(--mono);white-space:nowrap}
-.badge-blue{background:rgba(59,130,246,.18);color:#60a5fa}
-.badge-green{background:rgba(16,185,129,.18);color:#34d399}
-.badge-amber{background:rgba(245,158,11,.18);color:#fbbf24}
-.badge-red{background:rgba(239,68,68,.18);color:#f87171}
-.badge-teal{background:rgba(16,217,160,.18);color:var(--accent2)}
-.badge-purple{background:rgba(139,92,246,.18);color:#a78bfa}
-.badge-orange{background:rgba(249,115,22,.18);color:#fb923c}
 .alert{padding:12px 16px;border-radius:9px;font-size:13px;margin-bottom:16px;line-height:1.5}
-.alert-success{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);color:#34d399}
-.alert-warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:#fbbf24}
-.alert-danger{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#f87171}
-.alert-info{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:#93c5fd}
+.alert-success{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:#059669}
+.alert-warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:#d97706}
+.alert-danger{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#dc2626}
+.alert-info{background:rgba(79,70,229,.08);border:1px solid rgba(79,70,229,.2);color:#4f46e5}
 .tabs{display:flex;gap:3px;background:var(--surface2);border-radius:11px;padding:4px;margin-bottom:24px}
 .tab{flex:1;padding:10px 6px;border-radius:8px;border:none;background:transparent;color:var(--text3);font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;font-family:var(--sans)}
 .tab.active{background:var(--surface3);color:var(--text)}
@@ -118,9 +111,9 @@ select option{background:var(--surface2);color:var(--text)}
 .score-of{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
 .mark-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .chip{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;font-family:var(--mono)}
-.chip-green{background:rgba(16,185,129,.18);color:#34d399;border:1px solid rgba(16,185,129,.25)}
-.chip-red{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)}
-.chip-gray{background:rgba(74,96,128,.15);color:var(--text3);border:1px solid var(--border)}
+.chip-green{background:rgba(16,185,129,.12);color:#059669;border:1px solid rgba(16,185,129,.2)}
+.chip-red{background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.15)}
+.chip-gray{background:rgba(148,163,184,.1);color:var(--text3);border:1px solid var(--border)}
 .link-box{background:var(--surface2);border:1px solid var(--accent);border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .link-url{flex:1;font-size:12px;color:var(--accent2);font-family:var(--mono);word-break:break-all;line-height:1.5}
 .info-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px}
@@ -133,7 +126,14 @@ select option{background:var(--surface2);color:var(--text)}
 .hero-title span{color:var(--accent)}
 .hero-sub{font-size:16px;color:var(--text2);max-width:480px;margin:0 auto 36px;line-height:1.7}
 .hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.grid-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.025;background-image:linear-gradient(var(--text) 1px,transparent 1px),linear-gradient(90deg,var(--text) 1px,transparent 1px);background-size:50px 50px}
+.grid-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.4;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:50px 50px}
+.badge-blue{background:rgba(79,70,229,.1);color:#4f46e5}
+.badge-green{background:rgba(16,185,129,.12);color:#059669}
+.badge-amber{background:rgba(245,158,11,.12);color:#d97706}
+.badge-red{background:rgba(239,68,68,.12);color:#dc2626}
+.badge-teal{background:rgba(14,165,233,.12);color:#0284c7}
+.badge-purple{background:rgba(139,92,246,.12);color:#7c3aed}
+.badge-orange{background:rgba(249,115,22,.12);color:#ea580c}
 .rel{position:relative;z-index:1}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fade-in{animation:fadeIn .3s ease forwards}
@@ -217,12 +217,12 @@ let S = {
   candidates: JSON.parse(localStorage.getItem('qa_v3_cands')||'[]'),
   resultEmails: JSON.parse(localStorage.getItem('qa_v3_emails')||'[]'),
   activeTest:null, 
-  form:{candidates:[{name:'', email:'', difficulty:'knowledgeable', resumeText:'', resumeFileName:''}], qapText:'', qapFileName:''},
+  form:{candidates:[{name:'', email:'', difficulty:'knowledgeable'}], qapText:'', qapFileName:''},
   questions:[], answers:{}, submitted:false, elapsed:0,
   generating:false, genStep:'', genPct:0,
   mailStatus:'', mailError:'',
   reviewMode:false,
-  adminPassInput:'', passErr:'',
+  adminPassInput:'', passErr:'', loginAttempts:0,
   newEmailInput:'',
   viewCandidate: null, 
   previewTest: null,   
@@ -269,28 +269,10 @@ async function handleQAPUpload(e) {
   render();
 }
 
-async function handleIndividualResumeUpload(e, candidateIndex) {
-  const file = e.dataTransfer ? e.dataTransfer.files[0] : e.target.files[0];
-  if (!file) return;
-  S.form.candidates[candidateIndex].resumeFileName = file.name;
-  S.form.candidates[candidateIndex].resumeText = 'Extracting PDF... Please wait.';
-  render();
-  const text = await extractTextFromPDF(file);
-  S.form.candidates[candidateIndex].resumeText = text.trim();
-  render();
-}
-
 function removeQAP(e) {
   e.stopPropagation();
   S.form.qapFileName = '';
   S.form.qapText = '';
-  render();
-}
-
-function removeResume(e, candidateIndex) {
-  e.stopPropagation();
-  S.form.candidates[candidateIndex].resumeFileName = '';
-  S.form.candidates[candidateIndex].resumeText = '';
   render();
 }
 
@@ -425,41 +407,43 @@ async function generate(){
   try{
     let allGeneratedQs = [];
     let lastInviteSuccess = false;
+    const batchId = Date.now().toString(36); // same for all candidates in this generation run
+    const batchDate = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
 
     for (let i = 0; i < candidates.length; i++) {
         const c = candidates[i];
-        const resText = c.resumeText.trim() || DEMO_RESUME; 
 
         const basePct = 5 + (90 * (i / candidates.length));
         const nextPct = 5 + (90 * ((i + 1) / candidates.length));
-        const seed = Math.random().toString(36).substring(7);
+        // Strong unique seed per candidate — different name+email+timestamp = different questions every time
+        const seed = `${c.name}-${c.email}-${Date.now()}-${Math.random().toString(36).substring(2,9)}`;
 
-        upd(`Generating 25 questions for ${c.name} via Claude…`, basePct + ((nextPct-basePct)*0.4));
+        upd(`Generating 25 unique questions for ${c.name}…`, basePct + ((nextPct-basePct)*0.4));
 
-        const prompt = `You are a QA examination expert. Generate exactly 25 MCQ questions in a JSON array.
-        Difficulty: ${DIFF_PROMPT[c.difficulty]}
+        const prompt = `You are a QA examination expert. Generate exactly 25 unique MCQ questions from the QAP document below.
 
-        SOURCE MATERIAL 1 (QAP):
-        ${qap.slice(0,2500)}
+CANDIDATE: ${c.name} | DIFFICULTY: ${DIFF_PROMPT[c.difficulty]}
+UNIQUENESS SEED (use this to vary your question selection and wording): ${seed}
 
-        SOURCE MATERIAL 2 (Candidate Resume):
-        ${resText.slice(0,2000)}
+QAP SOURCE MATERIAL:
+${qap.slice(0,4000)}
 
-        RULES:
-        - 4 options per question, exactly ONE correct (use 0-based index in "correct" field).
-        - Keep questions relatively short and concise for quick reading.
-        - Options MUST be clearly distinct from each other with no overlapping meaning.
-        - Include brief explanation for correct answer.
-        - Generate exactly 19 questions based on Source Material 1 (QAP).
-        - Generate exactly 6 questions based on Source Material 2 (Candidate Resume).
-        - IMPORTANT: Make these questions unique. Seed: ${seed}
-        - Return ONLY a valid JSON array. No markdown, no code fences, no backticks, no explanation before or after. Start your response with [ and end with ].
+STRICT RULES — every rule is mandatory:
+1. All 25 questions must come ONLY from the QAP document above. No outside knowledge.
+2. Each question must be SHORT and SIMPLE — maximum 2 sentences, readable in under 10 seconds.
+3. Use plain, direct language. Avoid jargon-heavy or overly technical phrasing.
+4. Each question tests ONE specific fact or concept only. No compound or multi-part questions.
+5. All 4 answer options must be COMPLETELY DIFFERENT from each other — no two options can have similar or overlapping meaning.
+6. The correct answer must be clearly and unambiguously correct with no room for debate.
+7. Wrong options must be believable but clearly wrong to someone who studied the QAP.
+8. Cover as many DIFFERENT topics from the QAP as possible — no two questions on the same sub-topic.
+9. IMPORTANT: The seed above guarantees this candidate gets different questions from others. Use it.
+10. Return ONLY a valid JSON array. No markdown, no code fences, no backticks, no preamble. Start with [ end with ].
 
-        FORMAT:
-        [
-          {"type":"qap", "question":"...", "options":["A. ...","B. ...","C. ...","D. ..."], "correct":0, "explanation":"..."},
-          {"type":"resume", "question":"...", "options":["A. ...","B. ...","C. ...","D. ..."], "correct":2, "explanation":"..."}
-        ]`;
+FORMAT (type must always be "qap"):
+[
+  {"type":"qap","question":"Short clear question here?","options":["A. First option","B. Second option","C. Third option","D. Fourth option"],"correct":0,"explanation":"Short reason why A is correct."}
+]`;
 
         const r1 = await fetchWithRetry(prompt);
         const t1 = r1.content[0].text;
@@ -511,8 +495,9 @@ async function generate(){
 
         const candData = {
             id: cid, name: c.name, email: c.email, testName: `${c.name}'s Assessment`, 
-            qapText: qap, resumeText: resText, difficulty: c.difficulty, questions: allQs, link, expires, 
-            status: 'Pending', createdAt: new Date().toLocaleDateString('en-IN'), 
+            qapText: qap, difficulty: c.difficulty, questions: allQs, link, expires,
+            status: 'Pending', createdAt: new Date().toLocaleDateString('en-IN'),
+            batchId, batchDate,
             score: null, marks: null, timeTaken: null, finalAnswers: {}
         };
 
@@ -544,7 +529,7 @@ async function generate(){
     set({
         generating: false, genStep: 'Done', genPct: 100, questions: allGeneratedQs,
         adminTab: 'generated', mailStatus: lastInviteSuccess ? 'sent' : 'not_configured',
-        form: {...S.form, candidates: [{name:'', email:'', difficulty: 'knowledgeable', resumeText: '', resumeFileName: ''}]}
+        form: {...S.form, candidates: [{name:'', email:'', difficulty: 'knowledgeable'}]}
     });
   } catch(e) { 
       save(); 
@@ -639,7 +624,7 @@ function buildLanding(){
     h('div',{className:'hero'},
       h('p',{className:'hero-eye'},'⚡ AI-Powered · Adaptive Difficulty · +4 / −1 Marking'),
       h('h1',{className:'hero-title'},'QA Assessment',h('br'),h('span',{},'Platform')),
-      h('p',{className:'hero-sub'},'Generate AI-personalised 25-question tests from your QAP document and candidate resume. Difficulty-matched to experience. Results auto-emailed to your team.'),
+      h('p',{className:'hero-sub'},'Generate AI-personalised 25-question tests from your QAP document. Every candidate gets unique questions. Difficulty-matched to experience. Results auto-emailed to your team.'),
       h('div',{className:'hero-btns'},
         h('button',{className:'btn btn-primary btn-lg',onClick:()=>set({view:'admin-login'})},'🔐 Admin Panel')
       )
@@ -667,7 +652,7 @@ function buildLanding(){
 
 function buildLogin(){
   return h('div',{className:'page-narrow fade-in'},
-    h('button',{className:'btn btn-ghost',style:{marginBottom:20},onClick:()=>set({view:'landing',adminPassInput:'',passErr:''})},'← Back'),
+    h('button',{className:'btn btn-ghost',style:{marginBottom:20},onClick:()=>set({view:'landing',adminPassInput:'',passErr:'',loginAttempts:0})},'← Back'),
     h('div',{className:'card'},
       h('div',{className:'card-title'},'🔐 Admin Login'),
       h('div',{className:'form-group'},
@@ -676,13 +661,25 @@ function buildLogin(){
           onInput:e=>{S.adminPassInput=e.target.value;S.passErr='';},
           onKeydown:e=>{if(e.key==='Enter')doLogin()}}),
         S.passErr?h('div',{className:'alert alert-danger',style:{marginTop:10}},S.passErr):null,
-        h('p',{style:{fontSize:12,color:'var(--text3)',marginTop:8}},'Default password: ',h('code',{},CFG.DEFAULT_ADMIN_PASSWORD))
+        S.loginAttempts>=3
+          ?h('div',{className:'alert alert-warn',style:{marginTop:10}},
+              '⚠️ Multiple failed attempts. Current password: ',
+              h('code',{},getAdminPass())
+            )
+          :null
       ),
       h('button',{className:'btn btn-primary btn-full btn-lg',onClick:doLogin},'Login →')
     )
   );
 }
-function doLogin(){ if(S.adminPassInput===getAdminPass()) set({view:'admin',passErr:''}); else set({passErr:'Incorrect password.'}); }
+function doLogin(){
+  if(S.adminPassInput===getAdminPass()){
+    set({view:'admin',passErr:'',loginAttempts:0});
+  } else {
+    const attempts = S.loginAttempts + 1;
+    set({passErr:'Incorrect password. Attempt '+attempts+' of 3.', loginAttempts:attempts});
+  }
+}
 
 function buildAdmin(){
   return h('div',{className:'page fade-in'},
@@ -713,13 +710,12 @@ function buildCreate(){
 
     h('div',{className:'card'},
       h('div',{className:'card-title'},
-        h('span',{},'👥 Candidate Details & Resumes'),
-        h('button',{className:'btn btn-outline btn-sm', onClick:()=>{ S.form.candidates.push({name:'',email:'', difficulty:'knowledgeable', resumeText:'', resumeFileName:''}); render(); }}, '+ Add Candidate')
+        h('span',{},'👥 Candidate Details'),
+        h('button',{className:'btn btn-outline btn-sm', onClick:()=>{ S.form.candidates.push({name:'',email:'', difficulty:'knowledgeable'}); render(); }}, '+ Add Candidate')
       ),
 
       ...f.candidates.map((c, idx) => h('div',{className:'candidate-block'},
         f.candidates.length > 1 ? h('button', {className:'btn btn-ghost', style:{position:'absolute', top:'8px', right:'8px', color:'var(--danger)', padding:'4px 8px'}, onClick:()=>{ f.candidates.splice(idx,1); render(); }}, 'Remove') : null,
-
         h('div',{className:'form-row'},
             h('div',{className:'form-group'},
                 h('label',{},'Candidate Name *'),
@@ -730,34 +726,14 @@ function buildCreate(){
                 h('input',{type:'email',placeholder:'candidate@company.com',value:c.email,onInput:e=>{f.candidates[idx].email=e.target.value}})
             )
         ),
-
-        h('div',{className:'form-row'},
-            h('div',{className:'form-group', style:{marginBottom:0}},
-                h('label',{},'Experience Level (Sets AI Difficulty)'),
-                h('select',{onChange:e=>{f.candidates[idx].difficulty=e.target.value}},
-                    ...Object.entries(DIFF).map(([k,d])=> h('option',{value:k, selected: c.difficulty === k ? 'selected' : false}, `${d.label} (${d.years})`))
-                )
-            ),
-            h('div',{className:'form-group', style:{marginBottom:0}},
-                h('label',{},'Candidate Resume (PDF)'),
-                h('div',{className:'dropzone', style:{borderColor: c.resumeFileName ? 'var(--accent)' : 'var(--border2)', color: c.resumeFileName ? 'var(--accent)' : 'var(--text2)', background: c.resumeFileName ? 'var(--aglow)' : 'transparent', cursor: c.resumeFileName ? 'default' : 'pointer'},
-                    onDragover: e => { if(!c.resumeFileName) e.preventDefault(); },
-                    onDrop: e => { if(!c.resumeFileName) { e.preventDefault(); handleIndividualResumeUpload(e, idx); } }
-                  },
-                  c.resumeText === 'Extracting PDF... Please wait.' ? '⏳ Extracting...' : 
-                  (c.resumeFileName ? 
-                      h('div', {style:{display:'flex', alignItems:'center', gap:'8px', position:'relative', zIndex:10}}, 
-                          h('span', {style: {whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '180px'}}, `📄 ${c.resumeFileName}`),
-                          h('button', {className:'btn btn-ghost btn-sm', style:{padding:'0 4px', color:'var(--danger)', fontSize:'18px', lineHeight:'1'}, onClick:(e) => removeResume(e, idx), title: 'Remove PDF'}, '×')
-                      )
-                  : '📁 Drag & Drop PDF here'),
-                  (!c.resumeFileName && c.resumeText !== 'Extracting PDF... Please wait.') ? h('input',{type:'file',accept:'.pdf',onChange:(e)=>handleIndividualResumeUpload(e, idx)}) : null
-                )
+        h('div',{className:'form-group', style:{marginBottom:0}},
+            h('label',{},'Experience Level (Sets AI Difficulty)'),
+            h('select',{onChange:e=>{f.candidates[idx].difficulty=e.target.value}},
+                ...Object.entries(DIFF).map(([k,d])=> h('option',{value:k, selected: c.difficulty === k ? 'selected' : false}, `${d.label} (${d.years})`))
             )
         )
       ))
     ),
-
     h('div',{className:'card'},
       h('div',{className:'card-title'},
         h('span',{},'📄 Quality Assurance Plan (Universal) ',h('span',{className:'badge badge-blue'},'75% of questions'))
@@ -861,7 +837,7 @@ function buildPreviewModal(c) {
             h('div',{className:'modal-body'},
                 ...qs.map((q,i)=> h('div',{className:'mcq-item'},
                     h('div',{className:'mcq-meta'},
-                        h('span',{className:'badge '+(q.type==='qap'?'badge-blue':'badge-teal')},q.type==='qap'?'📋 QAP':'👤 Resume'),
+                        h('span',{className:'badge badge-blue'},'📋 QAP'),
                         h('span',{style:{color:'var(--text3)',fontSize:11}},'Q'+(i+1)+' of '+qs.length)
                     ),
                     h('div',{className:'mcq-q'},q.question),
@@ -881,36 +857,117 @@ function buildPreviewModal(c) {
 function buildCandidates(){
   if(!S.candidates.length) return h('div',{className:'card',style:{textAlign:'center',padding:'48px 28px'}},h('div',{style:{fontSize:48,marginBottom:16}},'👥'),h('p',{style:{color:'var(--text3)'}},'No candidates yet.'));
 
-  const sortedCandidates = [...S.candidates].sort((a, b) => {
-      const scoreA = a.score !== null ? a.score : -1;
-      const scoreB = b.score !== null ? b.score : -1;
-      return scoreB - scoreA;
+  // Group candidates by batchId
+  const batchMap = {};
+  S.candidates.forEach(c => {
+    const bid = c.batchId || 'legacy';
+    if(!batchMap[bid]) batchMap[bid] = { date: c.batchDate || c.createdAt, candidates: [] };
+    batchMap[bid].candidates.push(c);
   });
 
-  return h('div',{},
-    ...sortedCandidates.map(c=>{
-      const d=DIFF[c.difficulty];
-      const isComplete = c.status === 'Completed';
-      const passed = c.score >= 35;
+  // Sort batches newest first
+  const batches = Object.entries(batchMap).sort((a,b)=>{
+    const aTime = a[1].candidates[0]?.id || '';
+    const bTime = b[1].candidates[0]?.id || '';
+    return bTime > aTime ? 1 : -1;
+  });
 
-      return h('div',{className:'candidate-card'},
-        h('div',{className:'avatar'},c.name?.charAt(0)?.toUpperCase()||'?'),
-        h('div',{style:{flex:1,minWidth:0}},
-          h('div',{style:{fontWeight:600,fontSize:14,color:'var(--text)'}},c.name),
-          h('div',{style:{fontSize:12,color:'var(--text3)'}},c.email+' · '+c.createdAt)
+  // Difficulty order
+  const DIFF_ORDER = ['expert','learned','knowledgeable','basic'];
+
+  return h('div',{},
+    // Header with refresh button
+    h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,flexWrap:'wrap',gap:8}},
+      h('div',{style:{fontSize:13,color:'var(--text2)'}},'Candidates grouped by batch and experience level.'),
+      h('button',{className:'btn btn-outline btn-sm',onClick:refreshCandidates},'🔄 Refresh Status from Server')
+    ),
+
+    // Render each batch
+    ...batches.map(([batchId, batch], batchIdx) => {
+      const total = batch.candidates.length;
+      const done = batch.candidates.filter(c=>c.status==='Completed').length;
+      const passed = batch.candidates.filter(c=>c.score>=35).length;
+
+      // Group within batch by difficulty
+      const byDiff = {};
+      batch.candidates.forEach(c => {
+        const dk = c.difficulty || 'basic';
+        if(!byDiff[dk]) byDiff[dk] = [];
+        byDiff[dk].push(c);
+      });
+
+      return h('div',{style:{marginBottom:24}},
+        // Batch header
+        h('div',{style:{
+          background:'linear-gradient(135deg,var(--accent),var(--accent2))',
+          borderRadius:'12px 12px 0 0',padding:'14px 20px',
+          display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8
+        }},
+          h('div',{style:{display:'flex',alignItems:'center',gap:10}},
+            h('div',{style:{fontSize:16,fontWeight:700,color:'#fff',fontFamily:'var(--display)'}},
+              `Batch ${batches.length - batchIdx}`,
+            ),
+            h('div',{style:{fontSize:12,color:'rgba(255,255,255,.75)',fontFamily:'var(--mono)'}},
+              batch.date
+            )
+          ),
+          h('div',{style:{display:'flex',gap:8}},
+            h('span',{style:{background:'rgba(255,255,255,.2)',color:'#fff',padding:'3px 10px',borderRadius:99,fontSize:11,fontFamily:'var(--mono)',fontWeight:600}},
+              `${total} candidate${total!==1?'s':''}`
+            ),
+            h('span',{style:{background:'rgba(255,255,255,.2)',color:'#fff',padding:'3px 10px',borderRadius:99,fontSize:11,fontFamily:'var(--mono)',fontWeight:600}},
+              `${done}/${total} completed`
+            ),
+            done>0?h('span',{style:{background:'rgba(255,255,255,.2)',color:'#fff',padding:'3px 10px',borderRadius:99,fontSize:11,fontFamily:'var(--mono)',fontWeight:600}},
+              `${passed} passed`
+            ):null
+          )
         ),
-        d?h('span',{className:'badge '+d.badge,style:{flexShrink:0}},d.label):null,
-        c.marks!=null?h('div',{style:{textAlign:'right',flexShrink:0}},
-          h('div',{style:{fontSize:14,fontWeight:700,color:'var(--accent)'}},c.marks+'/'+MAX_MARKS+' marks'),
-          h('div',{style:{fontSize:11,color:'var(--text3)',fontFamily:'var(--mono)'}},c.score+'% · '+c.timeTaken)
-        ):null,
-        h('div', {style:{display:'flex', gap:'6px', alignItems:'center', flexShrink:0}},
-            h('span',{className:'badge '+(isComplete?'badge-green':'badge-amber')},c.status),
-            isComplete ? h('span',{className:'badge '+(passed?'badge-green':'badge-red')}, passed ? 'PASS' : 'FAIL') : null
-        ),
-        isComplete 
-          ? h('button',{className:'btn btn-primary btn-sm',style:{flexShrink:0},onClick:()=>set({viewCandidate: c})},'📊 View Details')
-          : h('button',{className:'btn btn-outline btn-sm',style:{flexShrink:0},onClick:()=>{navigator.clipboard?.writeText(c.link);alert('Link copied for '+c.name)}},'🔗 Copy Link')
+
+        // Difficulty groups within batch
+        h('div',{style:{border:'1px solid var(--border)',borderTop:'none',borderRadius:'0 0 12px 12px',overflow:'hidden'}},
+          ...DIFF_ORDER.filter(dk => byDiff[dk]).map((dk, dIdx, arr) => {
+            const d = DIFF[dk];
+            const group = byDiff[dk];
+            return h('div',{},
+              // Difficulty sub-header
+              h('div',{style:{
+                background:'var(--surface2)',padding:'8px 20px',
+                borderTop: dIdx>0?'1px solid var(--border)':'none',
+                display:'flex',alignItems:'center',gap:8
+              }},
+                h('span',{className:'badge '+d.badge},d.label),
+                h('span',{style:{fontSize:11,color:'var(--text3)',fontFamily:'var(--mono)'}},d.years),
+                h('span',{style:{fontSize:11,color:'var(--text3)',marginLeft:'auto',fontFamily:'var(--mono)'}},
+                  group.length+' candidate'+( group.length!==1?'s':'')
+                )
+              ),
+              // Candidates in this difficulty group
+              ...group.map(c => {
+                const isComplete = c.status==='Completed';
+                const passed2 = c.score>=35;
+                return h('div',{className:'candidate-card',style:{borderRadius:0,border:'none',borderTop:'1px solid var(--border)',margin:0}},
+                  h('div',{className:'avatar'},c.name?.charAt(0)?.toUpperCase()||'?'),
+                  h('div',{style:{flex:1,minWidth:0}},
+                    h('div',{style:{fontWeight:600,fontSize:14,color:'var(--text)'}},c.name),
+                    h('div',{style:{fontSize:12,color:'var(--text3)'}},c.email)
+                  ),
+                  c.marks!=null?h('div',{style:{textAlign:'right',flexShrink:0}},
+                    h('div',{style:{fontSize:14,fontWeight:700,color:'var(--accent)'}},c.marks+'/'+MAX_MARKS),
+                    h('div',{style:{fontSize:11,color:'var(--text3)',fontFamily:'var(--mono)'}},c.score+'% · '+c.timeTaken)
+                  ):null,
+                  h('div',{style:{display:'flex',gap:'6px',alignItems:'center',flexShrink:0}},
+                    h('span',{className:'badge '+(isComplete?'badge-green':'badge-amber')},c.status),
+                    isComplete?h('span',{className:'badge '+(passed2?'badge-green':'badge-red')},passed2?'PASS':'FAIL'):null
+                  ),
+                  isComplete
+                    ?h('button',{className:'btn btn-primary btn-sm',style:{flexShrink:0},onClick:()=>set({viewCandidate:c})},'📊 Details')
+                    :h('button',{className:'btn btn-outline btn-sm',style:{flexShrink:0},onClick:()=>{navigator.clipboard?.writeText(c.link);alert('Link copied for '+c.name)}},'🔗 Copy Link')
+                );
+              })
+            );
+          })
+        )
       );
     }),
 
@@ -945,7 +1002,7 @@ function buildCandidateDetailsModal(c) {
 
                     return h('div',{className:'mcq-item'},
                         h('div',{className:'mcq-meta'},
-                            h('span',{className:'badge '+(q.type==='qap'?'badge-blue':'badge-teal')},q.type==='qap'?'📋 QAP':'👤 Resume'),
+                            h('span',{className:'badge badge-blue'},'📋 QAP'),
                             h('span',{style:{fontSize:11,color:'var(--text3)'}},'Q'+(i+1)),
                             sk ? h('span',{className:'badge badge-amber'},'⊘ Skipped · 0') :
                             isCorrect ? h('span',{className:'badge badge-green'},'✓ Correct · +4') :
@@ -1119,6 +1176,30 @@ function syncResultEmailsToServer(){
   }).catch(e => console.warn('Could not sync emails to server:', e.message));
 }
 
+async function refreshCandidates(){
+  if(!S.candidates.length) return;
+  let updated = 0;
+  for(let i=0;i<S.candidates.length;i++){
+    const c=S.candidates[i];
+    if(c.status==='Completed') continue; // already done, skip
+    try{
+      const r=await fetch('/store?id='+c.id);
+      if(r.ok){
+        const fresh=await r.json();
+        if(fresh.status==='Completed' && c.status!=='Completed'){
+          S.candidates[i]=fresh;
+          localStorage.setItem('qa_test_'+c.id,JSON.stringify(fresh));
+          updated++;
+        }
+      }
+    }catch(e){}
+  }
+  if(updated>0){ save(); }
+  render();
+  if(updated>0) alert(`✅ ${updated} candidate(s) status updated from server.`);
+  else alert('ℹ️ All statuses are current. No updates found.');
+}
+
 function buildCandidate(){
   const qs=S.activeTest?.questions||[];
   if(S.submitted) return buildResults(qs);
@@ -1148,7 +1229,7 @@ function buildCandidate(){
 
     ...qs.map((q,i)=>h('div',{className:'mcq-item',id:'qi'+i},
       h('div',{className:'mcq-meta'},
-        h('span',{className:'badge '+(q.type==='qap'?'badge-blue':'badge-teal')},q.type==='qap'?'📋 QAP':'👤 Resume'),
+        h('span',{className:'badge badge-blue'},'📋 QAP'),
         h('span',{style:{color:'var(--text3)',fontSize:11}},'Q'+(i+1)+' of '+qs.length),
         h('span',{style:{color:'var(--text3)',fontSize:11,fontFamily:'var(--mono)'}},'(+4 / -1 / 0)')
       ),
@@ -1202,21 +1283,17 @@ function buildResults(qs){
       S.mailStatus==='not_configured'?h('div',{className:'alert alert-info'},'📋 Results saved to Admin Panel. Check Railway environment variables if emails were not sent.'):null
     ),
 
-    h('div', {style:{display: 'flex', gap: '10px', marginBottom: '16px'}}, 
-        h('button',{className:'btn btn-outline',style:{flex: '1'},onClick:()=>set({reviewMode:!S.reviewMode})},
+    h('div', {style:{marginBottom: '16px'}}, 
+        h('button',{className:'btn btn-primary btn-full',onClick:()=>set({reviewMode:!S.reviewMode})},
           S.reviewMode?'▲ Hide Review':'📋 Review Answers & Explanations'
-        ),
-        h('button',{className:'btn btn-primary',style:{flex: '1'},onClick:()=>{
-            window.history.replaceState({}, document.title, window.location.pathname);
-            set({view:'landing', reviewMode: false, activeTest: null, submitted: false, answers: {}, elapsed: 0});
-        }},'🏠 Back to Home')
+        )
     ),
 
     S.reviewMode?h('div',{},...qs.map((q,i)=>{
       const a=S.answers[i],ok=a===q.correct,sk=a===undefined||a===null;
       return h('div',{className:'mcq-item'},
         h('div',{className:'mcq-meta'},
-          h('span',{className:'badge '+(q.type==='qap'?'badge-blue':'badge-teal')},q.type==='qap'?'📋 QAP':'👤 Resume'),
+          h('span',{className:'badge badge-blue'},'📋 QAP'),
           h('span',{style:{fontSize:11,color:'var(--text3)'}},'Q'+(i+1)),
           sk?h('span',{className:'badge badge-amber'},'⊘ Skipped · 0'):
           ok?h('span',{className:'badge badge-green'},'✓ Correct · +4'):
@@ -1261,8 +1338,6 @@ function buildMsg(icon,title,msg){
 }
 
 const DEMO_QAP=`Quality Assurance Plan v3.0 — ISO 9001:2015\n\n1. Document Control & Records Management\n   - Revision control per Clause 7.5; Master Document Register (MDR)\n2. Non-Conformance Reporting (NCR)\n   - Initiation within 24h; Dispositions: rework, repair, use-as-is (concession), scrap\n3. Root Cause Analysis: 5-Why, Fishbone, FTA for critical failures\n4. CAPA: 8D process; effectiveness review at 30/60/90 days\n5. Inspection & Test Plans (ITP): IMI, in-process, FAT sign-off\n6. SPC: Xbar-R, P-chart, C-chart; Cpk ≥ 1.33; OCAP\n7. MSA / Gauge R&R: GRR < 10% preferred, <30% marginal; bias, linearity, stability\n8. Supplier Quality: ASL, annual critical audits, FAI per AS9102, PPAP\n9. Customer Complaints: 8D within 10 days; containment within 24h\n10. KPIs: PPM, FPY, COPQ, OTD, Customer Return Rate`;
-const DEMO_RESUME=`JOHN SMITH — Senior QA Engineer\nBosch India 2019–2024: IATF 16949 implementation, PPAP for 12 launches, PPM 450→68 using SPC, MSA/GR&R on 25+ gauges, 8D for OEM complaints\nTata Motors 2015–2019: Incoming inspection, CMM (ZEISS CONTURA), NCR/CAPA in SAP QM, supplier audits\nCertifications: CSSGB (ASQ 2021), IATF 16949 Auditor (TÜV 2020), AS9100D\nSkills: APQP, PPAP, DFMEA/PFMEA, MSA, SPC; Minitab 21, SAP QM; CMM operation\nIndustries: Automotive, Aerospace fasteners; B.E. Mechanical, Pune Univ 2015`;
-
 // On load: sync any locally-saved result emails up to the server
 if (S.resultEmails.length) {
   fetch('/config', {
